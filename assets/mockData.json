@@ -1,0 +1,27 @@
+[
+    {
+      "id": "1",
+      "title": "Sunset Hike at Blue Ridge",
+      "description": "Join us for a chill hike to watch the sunset. Bring snacks & layers!",
+      "date": "July 4",
+      "location": "Blue Ridge Trail",
+      "image": "https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+    },
+    {
+      "id": "2",
+      "title": "Bonfire & Jam Night",
+      "description": "We’ve got guitars, s’mores, and good vibes. Come through!",
+      "date": "July 5",
+      "location": "Riley’s Backyard",
+      "image": "https://images.unsplash.com/photo-1600047504608-3f09f9d1b7d0"
+    },
+    {
+      "id": "3",
+      "title": "Skating Downtown",
+      "description": "Roll through for some night skating around the plaza. All levels welcome.",
+      "date": "July 6",
+      "location": "Downtown Commons",
+      "image": "https://images.unsplash.com/photo-1513892483072-2e84ea0ad039"
+    }
+  ]
+  
