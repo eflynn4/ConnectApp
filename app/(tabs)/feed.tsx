@@ -1,6 +1,6 @@
 import { FlatList, View } from "react-native";
-import EventCard from "../components/EventCard";
-import { useEvents } from "../context/EventContext";
+import EventCard from "../../components/EventCard";
+import { useEvents } from "../../context/EventContext";
 
 export default function FeedScreen() {
   const { events } = useEvents();

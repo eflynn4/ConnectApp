@@ -1,6 +1,6 @@
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import EventCard from "../components/EventCard"; // reuse if you have this
-import { useEvents } from "../context/EventContext";
+import EventCard from "../../components/EventCard";
+import { useEvents } from "../../context/EventContext";
 
 export default function MyEventsScreen() {
   const { events } = useEvents();

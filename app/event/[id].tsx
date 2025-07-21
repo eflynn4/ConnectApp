@@ -1,10 +1,16 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useEvents } from "../../context/EventContext";
+import { useProfile } from "../../context/ProfileContext";
+import { useProfiles } from "../../context/ProfilesContext";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
   const { events, joinEvent, leaveEvent } = useEvents();
+
+  const { profile } = useProfile();
+  const userId = profile.id;
+  const router = useRouter();
 
   const event = events.find((e) => e.id === id);
 
@@ -16,7 +22,8 @@ export default function EventDetailScreen() {
     );
   }
 
-  const userId = "user123"; // mock user
+  const profiles = useProfiles();
+  
   const isJoined = event.attendees.includes(userId);
 
   const isAlreadyJoined = event.attendees.includes(userId);
@@ -34,6 +41,21 @@ export default function EventDetailScreen() {
       <Text style={styles.attendance}>
         {event.attendees.length} / {event.capacity} attending
       </Text>
+
+      <Text style={styles.subheader}>Attendees:</Text>
+      {event.attendees.map(uid => {
+        const user = profiles.find(p => p.id === uid);
+        if (!user) return null;
+        return (
+          <Text
+            key={uid}
+            style={styles.link}
+            onPress={() => router.push(`/users/${uid}`)}
+          >
+            • {user.name}
+          </Text>
+        );
+      })}
 
       <Button
       title={isJoined ? "Leave Event" : "Join"}
@@ -90,5 +112,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 12,
     color: "#444",
+  },
+  subheader: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 12,
+  },
+  link: {
+    fontSize: 16,
+    color: "#007AFF",
+    marginBottom: 4,
   },
 });

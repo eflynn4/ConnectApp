@@ -1,21 +1,20 @@
-import { Tabs } from "expo-router/tabs";
+import { Slot } from "expo-router";
 import 'react-native-gesture-handler';
 import { EventProvider } from "../context/EventContext";
 import { ProfileProvider } from "../context/ProfileContext";
+import { ProfilesProvider } from "../context/ProfilesContext";
 
-
-export default function Layout() {
+export default function RootLayout() {
   return (
     <EventProvider>
       <ProfileProvider>
-        <Tabs>
-          <Tabs.Screen name="feed"    options={{ title: "Feed"    }} />
-          <Tabs.Screen name="create"  options={{ title: "Create"  }} />
-          <Tabs.Screen name="profile" options={{ title: "Profile" }} />
-          <Tabs.Screen name="index"   options={{ href: null }} />
-          <Tabs.Screen name="myevents" options={{ title: "My Events" }} />
-        </Tabs>
+        <ProfilesProvider>
+          <Slot />
+        </ProfilesProvider>
       </ProfileProvider>
     </EventProvider>
   );
 }
+
+
+console.log("Global layout mounted");

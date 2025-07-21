@@ -1,8 +1,8 @@
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Button, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import MediaGrid from "../components/MediaGrid";
-import { useProfile } from "../context/ProfileContext";
+import MediaGrid from "../../components/MediaGrid";
+import { useProfile } from "../../context/ProfileContext";
 
 export default function ProfileScreen() {
   const { profile, updateProfile } = useProfile();

@@ -1,4 +1,4 @@
-import Video, { ResizeMode } from "expo-av"; // optional
+import { ResizeMode, Video } from "expo-av"; // optional
 import * as ImagePicker from "expo-image-picker";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 
@@ -11,6 +11,7 @@ export default function MediaGrid({ media, onReplace }: {
   const pickMedia = async (index: number) => {
     const res = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
+      //mediaTypes: "mixed" as any, // or "image" | "video",
       quality: 0.8,
     });
     if (!res.canceled && res.assets.length) {

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Alert, Button, ScrollView, StyleSheet, Text, TextInput } from "react-native";
-import { Event, useEvents } from "../context/EventContext";
-import { useProfile } from "../context/ProfileContext"; // adjust path if needed
+import { Event, useEvents } from "../../context/EventContext";
+import { useProfile } from "../../context/ProfileContext"; // adjust path if needed
+
 
 
 export default function CreateEventScreen() {
