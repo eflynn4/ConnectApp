@@ -7,11 +7,11 @@ import { ProfilesProvider } from "../context/ProfilesContext";
 export default function RootLayout() {
   return (
     <EventProvider>
-      <ProfileProvider>
-        <ProfilesProvider>
+      <ProfilesProvider>
+        <ProfileProvider>
           <Slot />
-        </ProfilesProvider>
-      </ProfileProvider>
+        </ProfileProvider>
+      </ProfilesProvider>
     </EventProvider>
   );
 }

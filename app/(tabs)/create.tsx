@@ -36,6 +36,7 @@ export default function CreateEventScreen() {
         image,
         capacity: Math.max(2, parseInt(capacity) || 5), // ⬅️ Enforce minimum of 2
         attendees: [profile.id], // start with no one joined
+        creatorId: profile.id
     };
       
 

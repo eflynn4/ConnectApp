@@ -37,3 +37,13 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# Expo cache
+.expo-shared/
+
+# Logs
+*.log
+
+# Editor config
+.vscode/
+.idea/

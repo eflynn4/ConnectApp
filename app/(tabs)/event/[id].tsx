@@ -1,8 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Image, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useEvents } from "../../context/EventContext";
-import { useProfile } from "../../context/ProfileContext";
-import { useProfiles } from "../../context/ProfilesContext";
+import { Button, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEvents } from "../../../context/EventContext";
+import { useProfile } from "../../../context/ProfileContext";
+import { useProfiles } from "../../../context/ProfilesContext";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -28,6 +28,10 @@ export default function EventDetailScreen() {
 
   const isAlreadyJoined = event.attendees.includes(userId);
 
+  console.log("Attendees for event:", event.attendees);
+  console.log("Profiles loaded:", profiles.map(p => p.id));
+
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {event.image && (
@@ -43,17 +47,28 @@ export default function EventDetailScreen() {
       </Text>
 
       <Text style={styles.subheader}>Attendees:</Text>
+
       {event.attendees.map(uid => {
         const user = profiles.find(p => p.id === uid);
-        if (!user) return null;
+        if (!user) {
+          console.warn(`Missing profile for uid: ${uid}`);
+          return <Text key={uid}>[Unknown User]</Text>;
+        }
         return (
-          <Text
+          <Pressable
             key={uid}
-            style={styles.link}
             onPress={() => router.push(`/users/${uid}`)}
+            style={styles.attendeeRow}
           >
-            • {user.name}
-          </Text>
+            <Image source={{ uri: user.avatar }} style={styles.avatarThumb} />
+            <Text
+              key={uid}
+              style={styles.link}
+              onPress={() => router.push(`/users/${uid}`)}
+            >
+              • {user.name}
+            </Text>
+          </Pressable>
         );
       })}
 
@@ -123,4 +138,19 @@ const styles = StyleSheet.create({
     color: "#007AFF",
     marginBottom: 4,
   },
+  attendeeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  avatarThumb: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: 8,
+  },
+  nameText: {
+    fontSize: 16,
+  }
+  
 });

@@ -10,6 +10,7 @@ export type Event = {
     image: string;
     capacity: number;           // NEW
     attendees: string[];        // NEW
+    creatorId: string; // 🔥 NEW
   };
   
 
@@ -18,6 +19,7 @@ export type Event = {
     addEvent: (event: Event) => void;
     joinEvent: (userId: string, eventId: string) => void;
     leaveEvent: (userId: string, eventId: string) => void;
+    
   };
   
 
@@ -31,7 +33,8 @@ const initialEvents: Event[] = [
       location: "Blue Ridge Trail",
       image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
       capacity: 5,
-      attendees: ["user123"]
+      attendees: ["user456"],
+      creatorId: "user456"
     },
     {
       id: "2",
@@ -41,7 +44,8 @@ const initialEvents: Event[] = [
       location: "Riley’s Backyard",
       image: "https://images.unsplash.com/photo-1600047504608-3f09f9d1b7d0",
       capacity: 10,
-      attendees: []
+      attendees: ["user456", "user789"],
+      creatorId: "user456"
     }
   ];
   

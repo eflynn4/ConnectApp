@@ -1,5 +1,5 @@
 // context/ProfilesContext.tsx
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 export type UserProfile = {
   id: string;
@@ -8,32 +8,40 @@ export type UserProfile = {
   avatar: string;
 };
 
-const mockProfiles: UserProfile[] = [
+type ProfilesContextType = {
+  profiles: UserProfile[];
+  setProfiles: React.Dispatch<React.SetStateAction<UserProfile[]>>;
+};
+
+
+const initialProfiles: UserProfile[] = [
   {
     id: "user123",
     name: "Ape Geeky",
     bio: "Living free and vibing with strangers.",
-    avatar: "https://example.com/avatar1.jpg"
+    avatar: "https://media.licdn.com/dms/image/v2/D5603AQF6yqj3RhCgNw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1694802001297?e=1755734400&v=beta&t=8c8Ux2OTeYoHN0TqJr90iJqnD_RFcmJzViCsYZJxSso"
   },
   {
     id: "user456",
     name: "Alice Wander",
     bio: "Climber, coder, coffee addict.",
-    avatar: "https://example.com/avatar2.jpg"
+    avatar: "https://randomuser.me/api/portraits/women/2.jpg"
   },
   {
     id: "user789",
     name: "Bob Pine",
     bio: "S'mores king. Campfire guitarist.",
-    avatar: "https://example.com/avatar3.jpg"
+    avatar: "https://randomuser.me/api/portraits/men/1.jpg"
   }
 ];
 
-const ProfilesContext = createContext<{ profiles: UserProfile[] } | undefined>(undefined);
+const ProfilesContext = createContext<ProfilesContextType | undefined>(undefined);
 
 export function ProfilesProvider({ children }: { children: ReactNode }) {
+  const [profiles, setProfiles] = useState(initialProfiles);
+
   return (
-    <ProfilesContext.Provider value={{ profiles: mockProfiles }}>
+    <ProfilesContext.Provider value={{ profiles, setProfiles }}>
       {children}
     </ProfilesContext.Provider>
   );
@@ -41,6 +49,12 @@ export function ProfilesProvider({ children }: { children: ReactNode }) {
 
 export function useProfiles() {
   const context = useContext(ProfilesContext);
-  if (!context) throw new Error("useProfiles must be used inside ProfilesProvider");
+  if (!context) throw new Error("useProfiles must be used inside <ProfilesProvider>");
   return context.profiles;
+}
+
+export function useSetProfiles() {
+  const context = useContext(ProfilesContext);
+  if (!context) throw new Error("useSetProfiles must be used inside <ProfilesProvider>");
+  return context.setProfiles;
 }
