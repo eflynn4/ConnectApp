@@ -7,7 +7,7 @@ type Profile = {
     name: string;
     bio: string;
     avatar: string;        // profile pic (URI or remote URL)
-    media: (string | null)[]; // fixed-length 9-slot array
+    media: string[]; // fixed-length 9-slot array
   };
 
 type ProfileContextType = {

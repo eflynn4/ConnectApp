@@ -1,6 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import MediaGrid from "../../../components/MediaGrid";
 import { useProfiles } from "../../../context/ProfilesContext";
 
 export default function UserProfileScreen() {
@@ -19,6 +20,7 @@ export default function UserProfileScreen() {
       <Image source={{ uri: profile.avatar }} style={styles.avatar} />
       <Text style={styles.name}>{profile.name}</Text>
       <Text style={styles.bio}>{profile.bio}</Text>
+      {profile.media && <MediaGrid media={profile.media} />}
     </View>
     </SafeAreaView>
   );

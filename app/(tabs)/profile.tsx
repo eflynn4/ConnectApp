@@ -1,7 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import { Button, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import MediaGrid from "../../components/MediaGrid";
+import EditProfileMediaGrid from "../../components/EditProfileMediaGrid";
 import { useProfile } from "../../context/ProfileContext";
 
 export default function ProfileScreen() {
@@ -9,7 +9,7 @@ export default function ProfileScreen() {
   const [name, setName] = useState(profile.name);
   const [bio, setBio] = useState(profile.bio);
   const [avatar, setAvatar] = useState(profile.avatar);
-  const [media,  setMedia]  = useState<(string|null)[]>(profile.media);
+  const [media,  setMedia]  = useState<string[]>(profile.media);
 
   /* ---- pick avatar ---- */
   const pickAvatar = async () => {
@@ -30,7 +30,7 @@ export default function ProfileScreen() {
   };
 
   const handleSave = () => {
-    updateProfile({ id: profile.id, name, bio , avatar, media });
+    updateProfile({ id: profile.id, name, bio , avatar, media, });
   };
 
   return (
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
       />
 
       {/* 3×3 media grid */}
-      <MediaGrid media={media} onReplace={handleReplace} />
+      <EditProfileMediaGrid media={media} onReplace={handleReplace} />
 
       <Button title="Save" onPress={handleSave}/>
     </ScrollView>
