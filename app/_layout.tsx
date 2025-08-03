@@ -1,6 +1,7 @@
 import { Slot } from "expo-router";
 import 'react-native-gesture-handler';
 import { EventProvider } from "../context/EventContext";
+import { FriendsProvider } from "../context/FriendsContext";
 import { ProfileProvider } from "../context/ProfileContext";
 import { ProfilesProvider } from "../context/ProfilesContext";
 
@@ -9,7 +10,9 @@ export default function RootLayout() {
     <EventProvider>
       <ProfilesProvider>
         <ProfileProvider>
-          <Slot />
+          <FriendsProvider>
+            <Slot />
+          </FriendsProvider>
         </ProfileProvider>
       </ProfilesProvider>
     </EventProvider>

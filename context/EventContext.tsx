@@ -44,8 +44,8 @@ const initialEvents: Event[] = [
       location: "Riley’s Backyard",
       image: "https://images.unsplash.com/photo-1600047504608-3f09f9d1b7d0",
       capacity: 10,
-      attendees: ["user456", "user789"],
-      creatorId: "user456"
+      attendees: ["user789", "user456"],
+      creatorId: "user789"
     }
   ];
   

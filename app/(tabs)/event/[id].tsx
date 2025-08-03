@@ -1,11 +1,13 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import FriendButton from "../../../components/FriendButton";
 import { useEvents } from "../../../context/EventContext";
 import { useProfile } from "../../../context/ProfileContext";
 import { useProfiles } from "../../../context/ProfilesContext";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
+
   const { events, joinEvent, leaveEvent } = useEvents();
 
   const { profile } = useProfile();
@@ -23,6 +25,8 @@ export default function EventDetailScreen() {
   }
 
   const profiles = useProfiles();
+
+  const host = profiles.find(p => p.id === event.creatorId);
   
   const isJoined = event.attendees.includes(userId);
 
@@ -38,6 +42,20 @@ export default function EventDetailScreen() {
         <Image source={{ uri: event.image }} style={styles.image} />
       )}
       <Text style={styles.title}>{event.title}</Text>
+      {host && (
+        <View style={styles.hostContainer}>
+          <Pressable
+            onPress={() => router.push(`/users/${host.id}`)}
+            style={styles.hostRow}
+          >
+            <Image source={{ uri: host.avatar }} style={styles.avatarThumb} />
+            <Text style={styles.hostName}>{host.name}</Text>
+          </Pressable>
+
+          {/* Only show FriendButton if I'm not the host */}
+          {host.id !== userId && <FriendButton userId={host.id} />}
+        </View>
+      )}
       <Text style={styles.date}>{event.date}</Text>
       <Text style={styles.location}>📍 {event.location}</Text>
       <Text style={styles.description}>{event.description}</Text>
@@ -45,6 +63,8 @@ export default function EventDetailScreen() {
       <Text style={styles.attendance}>
         {event.attendees.length} / {event.capacity} attending
       </Text>
+
+
 
       <Text style={styles.subheader}>Attendees:</Text>
 
@@ -62,11 +82,10 @@ export default function EventDetailScreen() {
           >
             <Image source={{ uri: user.avatar }} style={styles.avatarThumb} />
             <Text
-              key={uid}
               style={styles.link}
               onPress={() => router.push(`/users/${uid}`)}
             >
-              • {user.name}
+              • {user.name} {uid === event.creatorId ? "[HOST]" : ""}
             </Text>
           </Pressable>
         );
@@ -151,6 +170,21 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: 16,
-  }
+  },
+  hostContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  hostRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  hostName: {
+    fontSize: 18,
+    fontWeight: "600",
+  },
+  
   
 });
