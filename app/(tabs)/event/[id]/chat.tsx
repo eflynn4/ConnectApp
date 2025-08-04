@@ -52,6 +52,7 @@ export default function EventChatScreen() {
             name={item.senderName}
             avatar={item.senderAvatar}
             text={item.text}
+            timestamp={item.createdAt}
           />
         )}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: false })}
@@ -72,17 +73,29 @@ export default function EventChatScreen() {
   );
 }
 
-function Bubble({ me, name, avatar, text }: { me: boolean; name: string; avatar: string; text: string }) {
-  return (
-    <View style={[styles.row, me ? styles.right : styles.left]}>
-      {!me && <Image source={{ uri: avatar }} style={styles.avatar} />}
-      <View style={[styles.bubble, me ? styles.bubbleMe : styles.bubbleOther]}>
-        {!me && <Text style={styles.name}>{name}</Text>}
-        <Text>{text}</Text>
+function Bubble({
+    me, name, avatar, text, timestamp,
+  }: { me: boolean; name: string; avatar: string; text: string; timestamp?: number | string }) {
+    return (
+      <View style={[styles.msgContainer, me ? styles.alignRight : styles.alignLeft]}>
+        {/* Small header ABOVE the bubble */}
+        <View style={styles.msgHeader}>
+          <Image source={{ uri: avatar }} style={styles.headerAvatar} />
+          <Text style={styles.headerName} numberOfLines={1}>{name}</Text>
+          {timestamp ? (
+            <Text style={styles.headerTime}>
+              {typeof timestamp === "number" ? new Date(timestamp).toLocaleTimeString() : timestamp}
+            </Text>
+          ) : null}
+        </View>
+  
+        {/* Bubble */}
+        <View style={[styles.bubble, me ? styles.bubbleMe : styles.bubbleOther]}>
+          <Text>{text}</Text>
+        </View>
       </View>
-    </View>
-  );
-}
+    );
+  }
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "flex-end" },
@@ -118,4 +131,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderRadius: 8,
   },
+
+  msgContainer: { marginBottom: 10, maxWidth: "90%" },
+  alignLeft:    { alignSelf: "flex-start" },
+  alignRight:   { alignSelf: "flex-end" },
+
+  msgHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+    paddingHorizontal: 2,
+  },
+  headerAvatar: { width: 16, height: 16, borderRadius: 8 },
+  headerName:   { fontSize: 11, color: "#444", maxWidth: 160 },
+  headerTime:   { fontSize: 10, color: "#888" },
 });

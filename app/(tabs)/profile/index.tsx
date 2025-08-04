@@ -74,31 +74,28 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* avatar */}
+
       <Pressable onPress={pickAvatar}>
         {avatar
           ? <Image source={{ uri: avatar }} style={styles.avatar} />
           : <View style={styles.avatarPlaceholder} />}
       </Pressable>
 
-      {/* Top row: Friend Requests + Friends button */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }}> {/* NEW */}
-      <Link href="/profile/requests" asChild>
-        <Pressable>
-          <Text style={{ marginTop: 12, fontWeight: "600", color: "#4CAF50" }}>
-            Friend Requests ({incoming.length})
-          </Text>
-        </Pressable>
-      </Link>
-        <View style={{ flex: 0.5 }} />   {/* spacer pushes next item right */}
-        <Pressable onPress={() => setShowFriends(true)} style={styles.friendsBtn}> {/* NEW */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 12 }}>
+        <Link href="/profile/requests" asChild>
+          <Pressable>
+            <Text style={{ marginTop: 12, fontWeight: "600", color: "#4CAF50" }}>
+              Friend Requests ({incoming.length})
+            </Text>
+          </Pressable>
+        </Link>
+
+        <View style={{ flex: 0.5 }} />
+        <Pressable onPress={() => setShowFriends(true)} style={styles.friendsBtn}>
           <Text style={styles.friendsBtnText}>Friends ({friendProfiles.length})</Text>
         </Pressable>
       </View>
 
-      <Text />
-
-      {/* editable fields */}
       <Text>Name</Text>
       <TextInput value={name} onChangeText={setName} style={styles.input}/>
       <Text>Username</Text>
@@ -120,12 +117,10 @@ export default function ProfileScreen() {
         multiline style={[styles.input,{height:80}]}
       />
 
-      {/* 3×3 media grid */}
       <EditProfileMediaGrid media={media} onReplace={handleReplace} />
 
       <Button title="Save" onPress={handleSave} disabled={!validation.ok}/>
 
-      {/* Friends Modal */}                                          {/* NEW */}
       <Modal
         visible={showFriends}
         transparent
@@ -172,6 +167,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </Modal>
+
     </ScrollView>
   );
 }
