@@ -1,9 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import FriendButton from "../../../components/FriendButton";
-import { useEvents } from "../../../context/EventContext";
-import { useProfile } from "../../../context/ProfileContext";
-import { useProfiles } from "../../../context/ProfilesContext";
+import FriendButton from "../../../../components/FriendButton";
+import { useEvents } from "../../../../context/EventContext";
+import { useProfile } from "../../../../context/ProfileContext";
+import { useProfiles } from "../../../../context/ProfilesContext";
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -13,6 +13,8 @@ export default function EventDetailScreen() {
   const { profile } = useProfile();
   const userId = profile.id;
   const router = useRouter();
+
+  const { isMember } = useEvents();
 
   const event = events.find((e) => e.id === id);
 
@@ -64,7 +66,14 @@ export default function EventDetailScreen() {
         {event.attendees.length} / {event.capacity} attending
       </Text>
 
-
+      {isMember(event.id, userId) && (
+        <Pressable
+          onPress={() => router.push(`/event/${event.id}/chat`)}
+          style={{ alignSelf: "flex-end", paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "#eee", borderRadius: 8, marginTop: 8 }}
+        >
+          <Text style={{ fontWeight: "600" }}>Open Chat</Text>
+        </Pressable>
+      )}
 
       <Text style={styles.subheader}>Attendees:</Text>
 

@@ -19,22 +19,48 @@ export default function UserProfileScreen() {
   const router = useRouter();
   const profiles = useProfiles();
 
-  // ✅ find by targetId (not raw id object) and delay usage until after null check
-  const profile = profiles.find(p => p.id === targetId) ?? null;
-
+  const profile = useMemo(
+    () => profiles.find(p => p.id === targetId) ?? null,
+    [profiles, targetId]
+  );
   const [showFriends, setShowFriends] = useState(false);
 
   const { isFriends, isPendingOutgoing, canAcceptFrom, getFriendsOf } = useFriends();
 
   // ✅ bail out before using `profile`
-  if (!profile) return <Text>User not found.</Text>;
 
-  // ✅ now it's safe to use profile.id
-  const friendIds = getFriendsOf(profile.id);
+  const friendIds = useMemo(
+    () => (profile ? getFriendsOf(profile.id) : []),
+    [profile?.id, getFriendsOf] // include getFriendsOf in deps
+  );
+
+  // Decide what to render only after hooks have run
+  const isLoaded = profiles.length > 0; // or use a loading flag from context if you have one
+  if (!isLoaded) return <Text>Loading…</Text>;
+  if (!profile)  return <Text>User not found.</Text>;
+
+  type Profile = {
+    id: string;
+    bio: string;
+    media: string[];
+    friends: string[];
+    avatar: string;
+    name: string;
+    username: string;
+  };
+
   const friendProfiles = useMemo(
-    () => friendIds.map(fid => profiles.find(p => p.id === fid)).filter(Boolean) as typeof profiles,
+    () =>
+      friendIds
+        .map(fid => profiles.find(p => p.id === fid))
+        //       ^ may be undefined
+        .filter((p): p is Profile => !!p), // <-- narrows to Profile[]
     [friendIds, profiles]
   );
+
+  if (!profile) {
+    return <Text>Loading…</Text>;
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -89,9 +115,9 @@ export default function UserProfileScreen() {
               {friendProfiles.length === 0 ? (
                 <Text style={{ padding: 12 }}>No friends yet.</Text>
               ) : (
-                <FlatList
+                <FlatList<Profile>
                   data={friendProfiles}
-                  keyExtractor={(item) => item.id}
+                  keyExtractor={(item) => String(item.id)}
                   renderItem={({ item }) => (
                     <Pressable
                       style={styles.friendRow}

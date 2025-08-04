@@ -19,7 +19,8 @@ export type Event = {
     addEvent: (event: Event) => void;
     joinEvent: (userId: string, eventId: string) => void;
     leaveEvent: (userId: string, eventId: string) => void;
-    
+    getEventById: (eventId: string) => Event | undefined;         // NEW
+    isMember: (eventId: string, userId: string) => boolean;
   };
   
 
@@ -77,11 +78,15 @@ export function EventProvider({ children }: { children: ReactNode }) {
       )
     );
   };
+
+  const getEventById = (eventId: string) => events.find(e => e.id === eventId);
+  const isMember = (eventId: string, userId: string) =>
+    !!getEventById(eventId)?.attendees.includes(userId);
   
   
 
   return (
-    <EventContext.Provider value={{ events, addEvent, joinEvent, leaveEvent }}>
+    <EventContext.Provider value={{ events, addEvent, joinEvent, leaveEvent, getEventById, isMember }}>
       {children}
     </EventContext.Provider>
   );
