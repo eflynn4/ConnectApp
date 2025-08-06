@@ -72,6 +72,13 @@ export default function ProfileScreen() {
     updateProfile({ id: profile.id, username, name, bio , avatar, media, friends });
   };
 
+  const Separator = () => <View style={styles.separator} />;
+  const EmptyFriends = () => (
+    <View style={{ padding: 12 }}>
+      <Text>No friends yet.</Text>
+    </View>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
 
@@ -146,21 +153,36 @@ export default function ProfileScreen() {
               <FlatList<ProfileRow>
                 data={friendProfiles}
                 keyExtractor={(item) => String(item.id)}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
+                ItemSeparatorComponent={Separator}
+                ListEmptyComponent={EmptyFriends}
                 renderItem={({ item }) => (
-                  <Pressable
-                    style={styles.friendRow}
-                    onPress={() => {
-                      setShowFriends(false);
-                      router.push(`/users/${item.id}`);
-                    }}
-                  >
-                    <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.friendName}>{item.name}</Text>
-                      <Text style={styles.friendUsername}>@{item.username}</Text>
-                    </View>
-                  </Pressable>
+                  <View style={styles.friendRow}>
+                    {/* Left: open profile */}
+                    <Pressable
+                      style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
+                      onPress={() => {
+                        setShowFriends(false);
+                        router.push(`/users/${item.id}`);
+                      }}
+                    >
+                      <Image source={{ uri: item.avatar }} style={styles.friendAvatar} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.friendName}>{item.name}</Text>
+                        <Text style={styles.friendUsername}>@{item.username}</Text>
+                      </View>
+                    </Pressable>
+
+                    {/* Right: open DM chat */}
+                    <Pressable
+                      onPress={() => {
+                        setShowFriends(false);
+                        router.push(`/users/${item.id}/chat`);
+                      }}
+                      style={styles.chatBtn}
+                    >
+                      <Text style={styles.chatBtnText}>Message</Text>
+                    </Pressable>
+                  </View>
                 )}
               />
             )}
@@ -208,4 +230,15 @@ const styles = StyleSheet.create({
   friendName: { fontSize: 16, fontWeight: "600" },
   friendUsername: { fontSize: 13, color: "#666" },
   separator: { height: StyleSheet.hairlineWidth, backgroundColor: "#eee", marginLeft: 64 },
+  
+  chatBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#eee",
+    marginLeft: 8,
+    alignSelf: "center",
+  },
+  chatBtnText: { fontWeight: "600" },
+  
 });

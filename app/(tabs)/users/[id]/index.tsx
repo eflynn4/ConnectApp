@@ -8,10 +8,10 @@ import {
   StyleSheet, Text, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import FriendButton from "../../../components/FriendButton";
-import MediaGrid from "../../../components/MediaGrid";
-import { useFriends } from "../../../context/FriendsContext";
-import { useProfiles } from "../../../context/ProfilesContext";
+import FriendButton from "../../../../components/FriendButton";
+import MediaGrid from "../../../../components/MediaGrid";
+import { useFriends } from "../../../../context/FriendsContext";
+import { useProfiles } from "../../../../context/ProfilesContext";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -88,6 +88,16 @@ export default function UserProfileScreen() {
             style={styles.friendBtnInline}      // spacing/height align with Friends btn
             textStyle={styles.headerFriendTxt}
           />
+
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 12 }}>
+            {/* existing Friend/Friends buttons... */}
+            <Pressable
+              onPress={() => router.push(`/users/${targetId}/chat`)}
+              style={{ marginLeft: "auto", paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, backgroundColor: "#eee" }}
+            >
+              <Text style={{ fontWeight: "600" }}>Message</Text>
+            </Pressable>
+          </View>
         </View>
 
         <MediaGrid media={profile.media} />

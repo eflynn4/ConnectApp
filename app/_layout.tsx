@@ -1,3 +1,4 @@
+import { DirectChatProvider } from "@/context/DirectChatContext";
 import { Slot } from "expo-router";
 import 'react-native-gesture-handler';
 import { EventChatProvider } from "../context/EventChatContext";
@@ -15,7 +16,9 @@ export default function RootLayout() {
           <ProfileProvider>
             <FriendsProvider>
               <EventChatProvider>
-                <Slot />
+                <DirectChatProvider>
+                  <Slot />
+                </DirectChatProvider>
               </EventChatProvider>
             </FriendsProvider>
           </ProfileProvider>
