@@ -3,10 +3,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, ImageBackground, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
-import { Event, useEvents } from "../context/EventContext";
-import { useProfile } from "../context/ProfileContext";
+import { Event } from "../context/EventContext";
 import { useProfiles } from "../context/ProfilesContext";
-
 
 
 const eventTop = Image.resolveAssetSource(require("../assets/ui/event-top-border.png"));
@@ -19,14 +17,7 @@ const thumnbailBot = Image.resolveAssetSource(require("../assets/ui/img-bot-bord
 const thumbnailLeft = Image.resolveAssetSource(require("../assets/ui/img-left-border.png"));
 const thumbnailRight = Image.resolveAssetSource(require("../assets/ui/img-right-border.png"));
 
-const buttonTop = Image.resolveAssetSource(require("../assets/ui/button-top-border.png"));
-const buttonBot = Image.resolveAssetSource(require("../assets/ui/button-bot-border.png"));
-const buttonLeft = Image.resolveAssetSource(require("../assets/ui/button-left-border.png"));
-const buttonRight = Image.resolveAssetSource(require("../assets/ui/button-right-border.png"));
-const buttonBG = Image.resolveAssetSource(require("../assets/ui/button-bg.png"));
-
-
-
+const borderWidth = eventTop.height;
 
 type EventCardProps = {
   event: Event;
@@ -57,23 +48,6 @@ export default function EventCard({ event }: EventCardProps) {
     setImageSize({ width, height });
   };
 
-  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
-
-  const handleBtnLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setBtnSize({ width, height });
-  };
-
-  const { joinEvent, leaveEvent } = useEvents();
-  const { profile } = useProfile();
-  const userId = profile.id;
-
-  const isJoined = event.attendees.includes(userId);
-
-  const buttonText = isJoined
-    ? "JOINED"
-    : "JOIN";
-
   function getScaledHeight(asset: { width: number; height: number }, renderWidth: number) {
     const aspectRatio = asset.height / asset.width;
     return renderWidth * aspectRatio;
@@ -83,11 +57,6 @@ export default function EventCard({ event }: EventCardProps) {
   const bottomBorderHeight = getScaledHeight(eventBot, cardSize.width);
 
   const sideBorderHeight = cardSize.height + topBorderHeight/2 + bottomBorderHeight/2;
-
-  const topButtonBorderHeight = getScaledHeight(buttonTop, btnSize.width);
-  const bottomButtonBorderHeight = getScaledHeight(buttonBot, btnSize.width);
-  const sideButtonBorderHeight = btnSize.height + topButtonBorderHeight / 2 + bottomButtonBorderHeight / 2;
-
 
   const STROKE_RADIUS = 2;
   const strokeOffsets = Array.from({ length: STROKE_RADIUS * 2 + 1 }, (_, i) => i - STROKE_RADIUS);
@@ -175,7 +144,7 @@ export default function EventCard({ event }: EventCardProps) {
                       // ⬇️ bottom-right (change to -SHADOW_OFFSET for left if you want bottom-left)
                       left: SHADOW_OFFSET,
                       top: SHADOW_OFFSET,
-                      color: "rgba(0,0,0,0.7)",
+                      color: "rgba(0,0,0,0.6)",
                       // zIndex:-1 can get clipped; keep it 0 and rely on render order
                     },
                   ]}
@@ -219,83 +188,13 @@ export default function EventCard({ event }: EventCardProps) {
                   }
                 >
                   <LinearGradient
-                    colors={["#ffffff", "#FFFDE0"]}
+                    colors={["#ffffff", "#cccccc"]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 0, y: 1 }}
                     style={{ height: 28, width: "100%" }}
                   />
                 </MaskedView>
               </View>
-
-              <Text style={styles.meta}>{date} • {location}</Text>
-
-              <Pressable
-                onLayout={handleBtnLayout}
-                onPress={() => {
-                  if (isJoined) {
-                    leaveEvent(event.id, profile.id);
-                  } else {
-                    joinEvent(event.id, profile.id);
-                  }
-                }}
-                style={styles.joinButtonWrapper}
-              >
-                <ImageBackground source={buttonBG} style={styles.joinButtonBG} resizeMode="stretch">
-                  <Text style={styles.joinButtonText}>{buttonText}</Text>
-                </ImageBackground>
-
-                {/* Borders exactly like before */}
-                {/* Top Border */}
-                <Image
-                  source={buttonTop}
-                  style={{
-                    position: "absolute",
-                    top: -topButtonBorderHeight / 2,
-                    width: btnSize.width,
-                    height: topButtonBorderHeight,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Bottom Border */}
-                <Image
-                  source={buttonBot}
-                  style={{
-                    position: "absolute",
-                    bottom: -bottomButtonBorderHeight / 2,
-                    width: btnSize.width,
-                    height: bottomButtonBorderHeight,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Left Border */}
-                <Image
-                  source={buttonLeft}
-                  style={{
-                    position: "absolute",
-                    left: -(buttonLeft.width / 2),
-                    height: sideButtonBorderHeight,
-                    top: -topButtonBorderHeight / 2,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Right Border */}
-                <Image
-                  source={buttonRight}
-                  style={{
-                    position: "absolute",
-                    right: -(buttonRight.width / 2),
-                    height: sideButtonBorderHeight,
-                    top: -topButtonBorderHeight / 2,
-                  }}
-                  resizeMode="contain"
-                />
-
-              </Pressable>
-
-
 
             </View>
 
@@ -350,9 +249,8 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: "#B0FFF9",
+    borderColor: "#fff",
     backgroundColor: "#eee",
-    marginBottom: 5,
   },
   avatarHit: {
     position: "absolute",
@@ -400,14 +298,9 @@ const styles = StyleSheet.create({
   
 
   meta: {
-    fontSize: 14, // bigger
-    fontFamily: "Roboto_700Bold", // thicker
-    color: "#FFFDE0", // brighter like title
-    textShadowColor: "rgba(0, 0, 0, 0.9)",
-    textShadowOffset: { width: 1.5, height: 1.5 },
-    textShadowRadius: 2,
-    marginTop: 4, // small spacing below title
-    marginBottom: 5
+    fontSize: 14,
+    fontFamily: "Roboto_400Regular",
+    color: "#ddd",
   },
   outerWrapper: {
     position: "relative",
@@ -457,25 +350,4 @@ const styles = StyleSheet.create({
     top: "10%",
     left: "5%",
   },
-  joinButtonWrapper: {
-    alignSelf: "flex-start", // shrink to fit text
-    position: "relative",
-    marginTop: 12,
-    marginBottom: 10,
-  },
-  joinButtonBG: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  joinButtonText: {
-    fontSize: 16,
-    fontFamily: "Roboto_700Bold",
-    color: "#FFFDE0",
-    textShadowColor: "rgba(0, 0, 0, 0.8)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1.5,
-  },
-  
 });

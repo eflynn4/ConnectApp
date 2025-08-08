@@ -1,21 +1,41 @@
+import MaskedView from '@react-native-masked-view/masked-view';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Button, Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import FriendButton from "../../../../components/FriendButton";
+import { useState } from "react";
+import { Image, ImageBackground, LayoutChangeEvent, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useEvents } from "../../../../context/EventContext";
 import { useProfile } from "../../../../context/ProfileContext";
 import { useProfiles } from "../../../../context/ProfilesContext";
 
+// Reuse border assets
+const thumbnailTop = Image.resolveAssetSource(require("../../../../assets/ui/img-top-border.png"));
+const thumnbailBot = Image.resolveAssetSource(require("../../../../assets/ui/img-bot-border.png"));
+const thumbnailLeft = Image.resolveAssetSource(require("../../../../assets/ui/img-left-border.png"));
+const thumbnailRight = Image.resolveAssetSource(require("../../../../assets/ui/img-right-border.png"));
+
+const buttonTop = Image.resolveAssetSource(require("../../../../assets/ui/button-top-border.png"));
+const buttonBot = Image.resolveAssetSource(require("../../../../assets/ui/button-bot-border.png"));
+const buttonLeft = Image.resolveAssetSource(require("../../../../assets/ui/button-left-border.png"));
+const buttonRight = Image.resolveAssetSource(require("../../../../assets/ui/button-right-border.png"));
+const buttonBG = Image.resolveAssetSource(require("../../../../assets/ui/button-bg.png"));
+
+function getScaledHeight(asset: { width: number; height: number }, renderWidth: number) {
+  const aspectRatio = asset.height / asset.width;
+  return renderWidth * aspectRatio;
+}
+function getScaledWidth(asset: { width: number; height: number }, renderHeight: number) {
+  const aspectRatio = asset.width / asset.height;
+  return renderHeight * aspectRatio;
+}
+
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams();
-
-  const { events, joinEvent, leaveEvent } = useEvents();
-
+  const { events, joinEvent, leaveEvent, isMember } = useEvents();
   const { profile } = useProfile();
-  const userId = profile.id;
+  const profiles = useProfiles();
   const router = useRouter();
 
-  const { isMember } = useEvents();
-
+  const userId = profile.id;
   const event = events.find((e) => e.id === id);
 
   if (!event) {
@@ -26,174 +46,266 @@ export default function EventDetailScreen() {
     );
   }
 
-  const profiles = useProfiles();
-
   const host = profiles.find(p => p.id === event.creatorId);
-  
   const isJoined = event.attendees.includes(userId);
 
-  const isAlreadyJoined = event.attendees.includes(userId);
+  // JOIN button layout
+  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
+  const handleBtnLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setBtnSize({ width, height });
+  };
 
-  console.log("Attendees for event:", event.attendees);
-  console.log("Profiles loaded:", profiles.map(p => p.id));
+  const topButtonBorderHeight = getScaledHeight(buttonTop, btnSize.width);
+  const bottomButtonBorderHeight = getScaledHeight(buttonBot, btnSize.width);
+  const sideButtonBorderHeight = btnSize.height + topButtonBorderHeight / 2 + bottomButtonBorderHeight / 2;
+  const sideButtonBorderWidth = getScaledWidth(buttonLeft, sideButtonBorderHeight);
 
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const handleImageLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setImageSize({ width, height });
+  };
+
+  const topImageBorderHeight = getScaledHeight(thumbnailTop, imageSize.width);
+  const bottomImageBorderHeight = getScaledHeight(thumnbailBot, imageSize.width);
+  const sideImageBorderHeight = imageSize.height + topImageBorderHeight / 2 + bottomImageBorderHeight / 2;
+
+  const STROKE_RADIUS = 2;
+  const strokeOffsets = Array.from({ length: STROKE_RADIUS * 2 + 1 }, (_, i) => i - STROKE_RADIUS);
+  const SHADOW_OFFSET = STROKE_RADIUS;
+
+  const buttonText = isJoined ? "JOINED" : "JOIN";
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {event.image && (
-        <Image source={{ uri: event.image }} style={styles.image} />
-      )}
-      <Text style={styles.title}>{event.title}</Text>
-      {host && (
-        <View style={styles.hostContainer}>
-          <Pressable
-            onPress={() => router.push(`/users/${host.id}`)}
-            style={styles.hostRow}
-          >
-            <Image source={{ uri: host.avatar }} style={styles.avatarThumb} />
-            <Text style={styles.hostName}>{host.name}</Text>
-          </Pressable>
+    <ImageBackground source={require("../../../../assets/ui/bg.png")} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.container}>
+        
+        {/* Main image with borders */}
+        {event.image && (
+          <View onLayout={handleImageLayout} style={styles.imageWrapper}>
+            <Image source={{ uri: event.image }} style={styles.image} />
+            
+            {/* Top Border */}
+            <Image
+              source={thumbnailTop}
+              style={{
+                position: "absolute",
+                top: -thumbnailTop.height / 2,
+                width: imageSize.width,
+              }}
+              resizeMode="contain"
+            />
+            {/* Bottom Border */}
+            <Image
+              source={thumnbailBot}
+              style={{
+                position: "absolute",
+                bottom: -thumnbailBot.height / 2,
+                width: imageSize.width,
+              }}
+              resizeMode="contain"
+            />
+            {/* Left Border */}
+            <Image
+              source={thumbnailLeft}
+              style={{
+                position: "absolute",
+                left: -(thumbnailLeft.width / 2),
+                height: sideImageBorderHeight,
+                top: -topImageBorderHeight / 2,
+              }}
+              resizeMode="contain"
+            />
+            {/* Right Border */}
+            <Image
+              source={thumbnailRight}
+              style={{
+                position: "absolute",
+                right: -(thumbnailRight.width / 2),
+                height: sideImageBorderHeight,
+                top: -topImageBorderHeight / 2,
+              }}
+              resizeMode="contain"
+            />
+          </View>
+        )}
 
-          {/* Only show FriendButton if I'm not the host */}
-          {host.id !== userId && <FriendButton userId={host.id} />}
+        {/* Title */}
+        <View style={styles.titleStack}>
+          <Text
+            style={[
+              styles.title,
+              { position: "absolute", left: SHADOW_OFFSET, top: SHADOW_OFFSET, color: "rgba(0,0,0,0.7)" }
+            ]}
+          >
+            {event.title}
+          </Text>
+          {strokeOffsets.flatMap((dx) =>
+            strokeOffsets.map((dy) => {
+              if (dx === 0 && dy === 0) return null;
+              return (
+                <Text
+                  key={`${dx}-${dy}`}
+                  style={[
+                    styles.title,
+                    { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.05)" }
+                  ]}
+                >
+                  {event.title}
+                </Text>
+              );
+            })
+          )}
+          <Text style={[styles.title, { position: "absolute", color: "transparent" }]}>{event.title}</Text>
+          <MaskedView
+            style={{ height: 32, width: "100%" }}
+            maskElement={<View style={{ height: 32, justifyContent: "center" }}>
+              <Text style={[styles.title, { color: "black" }]}>{event.title}</Text>
+            </View>}
+          >
+            <LinearGradient
+              colors={["#ffffff", "#FFFDE0"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={{ height: 32, width: "100%" }}
+            />
+          </MaskedView>
         </View>
-      )}
-      <Text style={styles.date}>{event.date}</Text>
-      <Text style={styles.location}>📍 {event.location}</Text>
-      <Text style={styles.description}>{event.description}</Text>
 
-      <Text style={styles.attendance}>
-        {event.attendees.length} / {event.capacity} attending
-      </Text>
+        <Text style={styles.meta}>{event.date} • {event.location}</Text>
+        <Text style={styles.description}>{event.description}</Text>
 
-      {isMember(event.id, userId) && (
+        {/* Join Button */}
         <Pressable
-          onPress={() => router.push(`/event/${event.id}/chat`)}
-          style={{ alignSelf: "flex-end", paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "#eee", borderRadius: 8, marginTop: 8 }}
+          onLayout={handleBtnLayout}
+          onPress={() => {
+            if (isJoined) {
+              leaveEvent(event.id, userId);
+            } else {
+              joinEvent(event.id, userId);
+            }
+          }}
+          style={styles.joinButtonWrapper}
         >
-          <Text style={{ fontWeight: "600" }}>Open Chat</Text>
+          <ImageBackground source={buttonBG} style={styles.joinButtonBG} resizeMode="stretch">
+            <Text style={styles.joinButtonText}>{buttonText}</Text>
+          </ImageBackground>
+
+          {/* Borders */}
+          <Image
+            source={buttonTop}
+            style={{
+              position: "absolute",
+              top: -topButtonBorderHeight / 2,
+              width: btnSize.width,
+              height: topButtonBorderHeight,
+            }}
+            resizeMode="contain"
+          />
+          <Image
+            source={buttonBot}
+            style={{
+              position: "absolute",
+              bottom: -bottomButtonBorderHeight / 2,
+              width: btnSize.width,
+              height: bottomButtonBorderHeight,
+            }}
+            resizeMode="contain"
+          />
+          <Image
+            source={buttonLeft}
+            style={{
+              position: "absolute",
+              left: -(sideButtonBorderWidth / 2),
+              height: sideButtonBorderHeight,
+              width: sideButtonBorderWidth,
+              top: -topButtonBorderHeight / 2,
+            }}
+            resizeMode="contain"
+          />
+          <Image
+            source={buttonRight}
+            style={{
+              position: "absolute",
+              right: -(sideButtonBorderWidth / 2),
+              height: sideButtonBorderHeight,
+              width: sideButtonBorderWidth,
+              top: -topButtonBorderHeight / 2,
+            }}
+            resizeMode="contain"
+          />
         </Pressable>
-      )}
 
-      <Text style={styles.subheader}>Attendees:</Text>
+        <Text style={styles.attendance}>
+          {event.attendees.length} / {event.capacity} attending
+        </Text>
 
-      {event.attendees.map(uid => {
-        const user = profiles.find(p => p.id === uid);
-        if (!user) {
-          console.warn(`Missing profile for uid: ${uid}`);
-          return <Text key={uid}>[Unknown User]</Text>;
-        }
-        return (
+        {isMember(event.id, userId) && (
           <Pressable
-            key={uid}
-            onPress={() => router.push(`/users/${uid}`)}
-            style={styles.attendeeRow}
+            onPress={() => router.push(`/event/${event.id}/chat`)}
+            style={{ alignSelf: "flex-end", paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "#eee", borderRadius: 8, marginTop: 8 }}
           >
-            <Image source={{ uri: user.avatar }} style={styles.avatarThumb} />
-            <Text
-              style={styles.link}
-              onPress={() => router.push(`/users/${uid}`)}
-            >
-              • {user.name} {uid === event.creatorId ? "[HOST]" : ""}
-            </Text>
+            <Text style={{ fontWeight: "600" }}>Open Chat</Text>
           </Pressable>
-        );
-      })}
+        )}
 
-      <Button
-      title={isJoined ? "Leave Event" : "Join"}
-      onPress={() => {
-      if (isJoined) {
-        leaveEvent(event.id, userId);
-      } else {
-        joinEvent(event.id, userId);
-      }
-  }}
-  color={isJoined ? "#f44336" : "#4CAF50"} // red for leave, green for join
-/>
-
-    </ScrollView>
+        <Text style={styles.subheader}>Attendees:</Text>
+        {event.attendees.map(uid => {
+          const user = profiles.find(p => p.id === uid);
+          if (!user) {
+            return <Text key={uid}>[Unknown User]</Text>;
+          }
+          return (
+            <Pressable key={uid} onPress={() => router.push(`/users/${uid}`)} style={styles.attendeeRow}>
+              <Image source={{ uri: user.avatar }} style={styles.avatarThumb} />
+              <Text style={styles.link}>• {user.name} {uid === event.creatorId ? "[HOST]" : ""}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
-    backgroundColor: "#fff",
+  container: { padding: 24 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  imageWrapper: { width: '100%',position: "relative", alignSelf: "center", marginBottom: 16 },
+  image: { height: 200, borderRadius: 0 },
+  titleStack: { height: 32, justifyContent: "center", alignItems: "flex-start", position: "relative" },
+  title: { fontSize: 24, fontFamily: "Roboto_700Bold", lineHeight: 32 },
+  meta: {
+    fontSize: 14,
+    fontFamily: "Roboto_700Bold",
+    color: "#FFFDE0",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 1.5, height: 1.5 },
+    textShadowRadius: 2,
+    marginTop: 4,
+    marginBottom: 5
   },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  date: {
+  description: { fontSize: 16, color: "#fff", marginBottom: 12 },
+  joinButtonWrapper: { alignSelf: "flex-start", position: "relative", marginTop: 12, marginBottom: 10 },
+  joinButtonBG: { paddingHorizontal: 16, paddingVertical: 6, justifyContent: "center", alignItems: "center" },
+  joinButtonText: {
     fontSize: 16,
-    color: "#888",
-    marginBottom: 4,
+    fontFamily: "Roboto_700Bold",
+    color: "#FFFDE0",
+    textShadowColor: "rgba(0, 0, 0, 0.8)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1.5,
   },
-  location: {
-    fontSize: 16,
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 22,
-    marginBottom: 12,
-  },
-  attendance: {
-    fontSize: 16,
-    marginBottom: 12,
-    color: "#444",
-  },
-  subheader: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 12,
-  },
-  link: {
-    fontSize: 16,
-    color: "#007AFF",
-    marginBottom: 4,
-  },
-  attendeeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
+  attendance: { fontSize: 16, color: "#FFFDE0", marginBottom: 12 },
+  subheader: { fontSize: 18, fontWeight: "bold", marginTop: 12, color: "#FFFDE0" },
+  attendeeRow: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   avatarThumb: {
     width: 32,
     height: 32,
     borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#B0FFF9",
     marginRight: 8,
   },
-  nameText: {
-    fontSize: 16,
-  },
-  hostContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  hostRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  hostName: {
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  
-  
+  link: { fontSize: 16, color: "#FFFDE0" },
 });

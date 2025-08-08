@@ -43,7 +43,7 @@ const initialEvents: Event[] = [
       description: "We’ve got guitars, s’mores, and good vibes. Come through!",
       date: "July 5",
       location: "Riley’s Backyard",
-      image: "https://images.unsplash.com/photo-1600047504608-3f09f9d1b7d0",
+      image: "https://miro.medium.com/v2/resize:fit:1400/format:webp/1*mxNTPXbAwfILdu4ANY0Chw.jpeg",
       capacity: 10,
       attendees: ["user789", "user456"],
       creatorId: "user789"
