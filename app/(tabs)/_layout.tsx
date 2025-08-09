@@ -52,9 +52,13 @@ export default function TabsLayout() {
           marginTop: -6, // moves "Feed", "Create", etc. upward
         },
         tabBarStyle: {
-          height: tabBarHeight,          // raise if your icons are taller
-          paddingTop: 6,
-          paddingBottom: 10,
+          height: tabBarHeight,
+          paddingTop: Math.round(tabBarHeight * 0.1),
+          paddingBottom: Math.round(tabBarHeight * 0.1),
+          borderTopWidth: 0,       // <-- removes the line
+          elevation: 0,            // Android shadow
+          shadowOpacity: 0,        // iOS shadow
+          backgroundColor: "transparent", // so background image shows clean
         },
         tabBarItemStyle: {
           justifyContent: "center",
