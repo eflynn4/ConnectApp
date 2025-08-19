@@ -1,6 +1,7 @@
+import TabIcon from '@/components/TabIcon';
 import { Roboto_400Regular, Roboto_700Bold, useFonts } from '@expo-google-fonts/roboto';
 import { Tabs } from "expo-router/tabs";
-import { Image, ImageBackground, Text, View, useWindowDimensions } from 'react-native';
+import { ImageBackground, Text, View, useWindowDimensions } from 'react-native';
 
 export default function TabsLayout() {
   const [fontsLoaded] = useFonts({
@@ -23,6 +24,7 @@ export default function TabsLayout() {
 
   return (
     <Tabs
+      initialRouteName="feed"
       screenOptions={{
         headerBackground: () => (
           <ImageBackground
@@ -73,10 +75,11 @@ export default function TabsLayout() {
         options={{
           title: "Feed",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
               source={require("../../assets/ui/Connect No Back.png")}
-              style={{ height: iconSize *1.2, opacity: focused ? 1 : 0.85, marginTop: tabBarHeight * 0.2, }}
-              resizeMode="contain"
+              focused={focused}
+              height={iconSize * 1.2}
+              marginTop={tabBarHeight * 0.2}
             />
           ),
         }}
@@ -85,13 +88,28 @@ export default function TabsLayout() {
         name="create"
         options={{
           title: "Create",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/ui/Plus.png")}
+              focused={focused}
+              height={iconSize * 1.2}
+              marginTop={tabBarHeight * 0.2}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="myevents"
         options={{
           title: "My Events",
-          
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/ui/Event Icon.png")}
+              focused={focused}
+              height={iconSize * 1.2}
+              marginTop={tabBarHeight * 0.2}
+            />
+          ),
         }}
       />
       <Tabs.Screen
@@ -99,10 +117,11 @@ export default function TabsLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ focused }) => (
-            <Image
+            <TabIcon
               source={require("../../assets/ui/pfp.png")}
-              style={{ height: iconSize, opacity: focused ? 1 : 0.85, marginTop: tabBarHeight * 0.2, }}
-              resizeMode="contain"
+              focused={focused}
+              height={iconSize * 1.2}
+              marginTop={tabBarHeight * 0.2}
             />
           ),
         }}
