@@ -1,7 +1,7 @@
 import TabIcon from '@/components/TabIcon';
 import { Roboto_400Regular, Roboto_700Bold, useFonts } from '@expo-google-fonts/roboto';
 import { Tabs } from "expo-router/tabs";
-import { ImageBackground, Text, View, useWindowDimensions } from 'react-native';
+import { ImageBackground, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
 export default function TabsLayout() {
   const [fontsLoaded] = useFonts({
@@ -34,7 +34,7 @@ export default function TabsLayout() {
           />
         ),
         headerTintColor: "#fff", // make title text visible on dark bg
-        headerTitleStyle: { fontFamily: "Roboto_700Bold" },
+        headerTitleStyle: { fontFamily: "Roboto_700Bold", color: "#FFFDE0", textShadowColor: "rgba(0,0,0,0.9)", textShadowOffset: { width: 3, height: 3 }, textShadowRadius: 2, },
         headerTitleContainerStyle: {
           marginTop: -10, // move the title text up
         },
@@ -87,10 +87,10 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="create"
         options={{
-          title: "Create",
+          title: "Create Event",
           tabBarIcon: ({ focused }) => (
             <TabIcon
-              source={require("../../assets/ui/Plus.png")}
+              source={require("../../assets/ui/ThinPlus.png")}
               focused={focused}
               height={iconSize * 1.2}
               marginTop={tabBarHeight * 0.2}
@@ -136,3 +136,16 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#FFFDE0",
+    textShadowColor: "rgba(0,0,0,0.7)",
+    textShadowOffset: { width: 3, height: 3 },
+    textShadowRadius: 2,
+    marginBottom: 4,
+    alignSelf: "center"
+  },
+});
