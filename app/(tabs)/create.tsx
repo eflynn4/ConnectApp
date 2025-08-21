@@ -1,51 +1,72 @@
-import { useState } from "react";
+import React, { memo, useCallback, useState } from "react";
 import {
   Alert,
   Image,
   ImageBackground,
-  LayoutChangeEvent,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View
 } from "react-native";
 import { Event, useEvents } from "../../context/EventContext";
 import { useProfile } from "../../context/ProfileContext";
 
-type BorderedFieldProps = {
+// ✅ load once, outside component
+const fieldBG1 = Image.resolveAssetSource(require("../../assets/ui/borderedfield1.png"));
+const fieldBG2 = Image.resolveAssetSource(require("../../assets/ui/borderedfield2.png"));
+const fieldBG3 = Image.resolveAssetSource(require("../../assets/ui/borderedfield3.png"));
+const fieldBG4 = Image.resolveAssetSource(require("../../assets/ui/borderedfield4.png"));
+const fieldBG5 = Image.resolveAssetSource(require("../../assets/ui/borderedfield5.png"));
+const createBG = Image.resolveAssetSource(require("../../assets/ui/CreateBG.png"));
+const buttonBG = Image.resolveAssetSource(require("../../assets/ui/buttonBG.png"));
+
+// ✅ memoized bordered field so typing in one input doesn’t re-render all of them
+const BorderedField = memo(function BorderedField({
+  placeholder,
+  value,
+  onChangeText,
+  backgroundSource,
+  height,
+  keyboardType = "default",
+}: {
   placeholder: string;
   value: string;
   onChangeText: (t: string) => void;
-  backgroundSource: any; 
-  fieldTop: any;
-  fieldBot: any;
-  fieldLeft: any;
-  fieldRight: any;
+  backgroundSource: any;
   height?: number;
   keyboardType?: "default" | "numeric";
-  styles: any; 
-  getScaledHeight: (asset: { width: number; height: number }, renderWidth: number) => number;
-};
+}) {
+  return (
+    <View style={styles.fieldWrapper}>
+      <ImageBackground
+        source={backgroundSource}
+        style={[styles.fieldBG, height ? { height } : {}]}
+        resizeMode="stretch"
+      >
+        <TextInput
+          placeholder={placeholder}
+          placeholderTextColor="#b5b5b5"
+          value={value}
+          onChangeText={onChangeText}
+          style={[
+            styles.textInput,
+            { flex: 1, width: "100%", height: "100%", paddingVertical: 18 }
+          ]}
+          multiline={!!height}
+          keyboardType={keyboardType}
+        />
+      </ImageBackground>
+    </View>
+  );
+});
 
 export default function CreateEventScreen() {
-  const fieldTop = Image.resolveAssetSource(require("../../assets/ui/createfieldtop.png"));
-  const fieldBot = Image.resolveAssetSource(require("../../assets/ui/createfieldbot.png"));
-  const fieldLeft = Image.resolveAssetSource(require("../../assets/ui/createfieldleft.png"));
-  const fieldRight = Image.resolveAssetSource(require("../../assets/ui/createfieldright.png"));
-  const fieldBG1 = Image.resolveAssetSource(require("../../assets/ui/CreateField1.png"));
-  const fieldBG2 = Image.resolveAssetSource(require("../../assets/ui/CreateField2.png"));
-  const fieldBG3 = Image.resolveAssetSource(require("../../assets/ui/CreateField3.png"));
-  const fieldBG4 = Image.resolveAssetSource(require("../../assets/ui/CreateField4.png"));
-  const fieldBG5 = Image.resolveAssetSource(require("../../assets/ui/CreateField5.png"));
-  const createBG = Image.resolveAssetSource(require("../../assets/ui/CreateBG.png"));
-  const buttonTop = Image.resolveAssetSource(require("../../assets/ui/button-top-border.png"));
-  const buttonBot = Image.resolveAssetSource(require("../../assets/ui/button-bot-border.png"));
-  const buttonLeft = Image.resolveAssetSource(require("../../assets/ui/button-left-border.png"));
-  const buttonRight = Image.resolveAssetSource(require("../../assets/ui/button-right-border.png"));
-  const buttonBG = Image.resolveAssetSource(require("../../assets/ui/button-bg.png"));
-
   const { addEvent } = useEvents();
   const { profile } = useProfile();
 
@@ -56,28 +77,7 @@ export default function CreateEventScreen() {
   const [image, setImage] = useState("");
   const [capacity, setCapacity] = useState("");
 
-  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
-
-  const handleBtnLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setBtnSize({ width, height });
-  };
-
-  const [fieldSize, setFieldSize] = useState({ width: 0, height: 0 });
-
-  const onLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setFieldSize({ width, height });
-  };
-
-  
-
-  const getScaledHeight = (asset: { width: number; height: number }, renderWidth: number) => {
-    const aspectRatio = asset.height / asset.width;
-    return renderWidth * aspectRatio;
-  };
-
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     if (!title || !date || !location || !description) {
       Alert.alert("Missing info", "Please fill out every field except image.");
       return;
@@ -101,331 +101,44 @@ export default function CreateEventScreen() {
     addEvent(newEvent);
     Alert.alert("Event created!", "Check the Feed tab to see it.");
     setTitle(""); setDate(""); setLocation(""); setDesc(""); setImage(""); setCapacity("");
-  };
-
-
-  
-  const BorderedField: React.FC<BorderedFieldProps> = ({
-    placeholder, value, onChangeText,
-    backgroundSource,
-    height, keyboardType = "default", styles, getScaledHeight,
-  }) => {
-    const [bgSize, setBGSize] = useState({ width: 0, height: 0 });
-  
-    const onBGLayout = (e: LayoutChangeEvent) => {
-      const { width, height } = e.nativeEvent.layout;
-      setBGSize({ width, height });
-    };
-  
-    const topH = bgSize.width ? getScaledHeight(fieldTop, bgSize.width) : 0;
-    const botH = bgSize.width ? getScaledHeight(fieldBot, bgSize.width) : 0;
-    const sideH = bgSize.height + topH; 
-  
-    return (
-      <View style={styles.fieldWrapper}>
-        <ImageBackground
-          source={backgroundSource}
-          style={[styles.fieldBG, height ? { height } : {}]}
-          resizeMode="stretch"
-          onLayout={onBGLayout}
-        >
-          <TextInput
-            placeholder={placeholder}
-            placeholderTextColor="#b5b5b5"
-            value={value}
-            onChangeText={onChangeText}
-            style={[styles.textInput, height ? { height } : {}]}
-            multiline={!!height}
-            keyboardType={keyboardType}
-          />
-        </ImageBackground>
-
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
-            width: bgSize.width * 1.03,
-            height: getScaledHeight(fieldTop, bgSize.width),
-            left: -((bgSize.width * 1.03 - bgSize.width) / 2),
-            zIndex: 1,
-          }}
-        >
-          <Image source={fieldTop} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-        </View>
-
-        
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            bottom: -getScaledHeight(fieldBot, bgSize.width) / 2,
-            width: bgSize.width * 1.03,
-            height: getScaledHeight(fieldBot, bgSize.width),
-            left: -((bgSize.width * 1.03 - bgSize.width) / 2),
-            zIndex: 1,
-          }}
-        >
-          <Image source={fieldBot} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-        </View>
-
-       
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            left: -(fieldLeft.width / 2),
-            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
-            height: bgSize.height + getScaledHeight(fieldTop, bgSize.width),
-            zIndex: 1,
-          }}
-        >
-          <Image source={fieldLeft} style={{ height: "100%" }} resizeMode="contain" />
-        </View>
-
-        
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: -(fieldRight.width / 2),
-            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
-            height: bgSize.height + getScaledHeight(fieldTop, bgSize.width) - 4,
-            zIndex: 1,
-          }}
-        >
-          <Image source={fieldRight} style={{ height: "100%" }} resizeMode="contain" />
-        </View>
-
-      </View>
-    );
-  };
-
-
-  const renderField = (placeholder: string, value: string, onChangeText: (text: string) => void, backgroundSource: any, height?: number, keyboardType?: "default" | "numeric") => {
-    return (
-      <View style={styles.fieldWrapper} onLayout={onLayout}>
-        <ImageBackground
-          source={backgroundSource}
-          style={[styles.fieldBG, height ? { height } : {}]}
-          resizeMode="stretch"
-        >
-          <TextInput
-            placeholder={placeholder}
-            placeholderTextColor="#b5b5b5"
-            value={value}
-            onChangeText={onChangeText}
-            style={[styles.textInput, height ? { height } : {}]}
-            multiline={!!height}
-            keyboardType={keyboardType}
-          />
-        </ImageBackground>
-
-        
-
-        {/* Top Border */}
-        
-        <Image
-          source={fieldTop}
-          style={{
-            position: "absolute",
-            top: -fieldTop.height/2,
-            width: fieldSize.width*1.03,
-            left: -(fieldSize.width*1.03-fieldSize.width)/2
-          }}
-          resizeMode="contain"
-        />
-
-        {/* Bottom Border */}
-        <Image
-          source={fieldBot}
-          style={{
-            position: "absolute",
-            bottom: -fieldBot.height/2,
-            width: fieldSize.width*1.03,
-            left: -(fieldSize.width*1.03-fieldSize.width)/2
-          }}
-          resizeMode="contain"
-        />
-
-        {/* Left Border */}
-        <Image
-          source={fieldLeft}
-          style={{
-            position: "absolute",
-            left: -(fieldLeft.width / 2),
-            height: fieldSize.height + getScaledHeight(fieldTop, fieldSize.width) - 4,
-            top: -getScaledHeight(fieldTop, fieldSize.width)/2 + 2
-          }}
-          resizeMode="contain"
-        />
-
-        {/* Right Border */}
-        <Image
-          source={fieldRight}
-          style={{
-            position: "absolute",
-            right: -(fieldRight.width / 2),
-            height: fieldSize.height + getScaledHeight(fieldTop, fieldSize.width) - 4,
-            top: -getScaledHeight(fieldTop, fieldSize.width)/2 + 2
-          }}
-          resizeMode="contain"
-        />
-      </View>
-    );
-  };
+  }, [title, date, location, description, image, capacity, addEvent, profile.id]);
 
   return (
     <ImageBackground source={createBG} style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled" // 👈 important
+          >
+      
+            <BorderedField placeholder="Title" value={title} onChangeText={setTitle} backgroundSource={fieldBG1} />
+            <BorderedField placeholder="Date" value={date} onChangeText={setDate} backgroundSource={fieldBG2} />
+            <BorderedField placeholder="Capacity" value={capacity} onChangeText={setCapacity} keyboardType="numeric" backgroundSource={fieldBG3} />
+            <BorderedField placeholder="Location" value={location} onChangeText={setLocation} backgroundSource={fieldBG4} />
+            <BorderedField placeholder="Description" value={description} onChangeText={setDesc} backgroundSource={fieldBG5} height={120} />
+            <BorderedField placeholder="Image URL (optional)" value={image} onChangeText={setImage} backgroundSource={fieldBG4} />
 
-        {/* {renderField("Title", title, setTitle, fieldBG1)}
-        {renderField("Date", date, setDate, fieldBG2)}
-        {renderField("Capacity", capacity, setCapacity, fieldBG3, undefined, "numeric")}
-        {renderField("Location", location, setLocation, fieldBG4)}
-        {renderField("Description", description, setDesc, fieldBG5, 100)}
-        {renderField("Image URL (optional)", image, setImage, fieldBG4)} */}
-
-
-        <BorderedField
-        placeholder="Title"
-        value={title}
-        onChangeText={setTitle}
-        backgroundSource={fieldBG1}
-        fieldTop={fieldTop}
-        fieldBot={fieldBot}
-        fieldLeft={fieldLeft}
-        fieldRight={fieldRight}
-        styles={styles}
-        getScaledHeight={getScaledHeight}
-        />
-        <BorderedField
-          placeholder="Date"
-          value={date}
-          onChangeText={setDate}
-          backgroundSource={fieldBG2}
-          fieldTop={fieldTop}
-          fieldBot={fieldBot}
-          fieldLeft={fieldLeft}
-          fieldRight={fieldRight}
-          styles={styles}
-          getScaledHeight={getScaledHeight}
-        />
-        <BorderedField
-          placeholder="Capacity"
-          value={capacity}
-          onChangeText={setCapacity}
-          keyboardType="numeric"
-          backgroundSource={fieldBG3}
-          fieldTop={fieldTop}
-          fieldBot={fieldBot}
-          fieldLeft={fieldLeft}
-          fieldRight={fieldRight}
-          styles={styles}
-          getScaledHeight={getScaledHeight}
-        />
-        <BorderedField
-          placeholder="Location"
-          value={location}
-          onChangeText={setLocation}
-          backgroundSource={fieldBG4}
-          fieldTop={fieldTop}
-          fieldBot={fieldBot}
-          fieldLeft={fieldLeft}
-          fieldRight={fieldRight}
-          styles={styles}
-          getScaledHeight={getScaledHeight}
-        />
-        <BorderedField
-          placeholder="Description"
-          value={description}
-          onChangeText={setDesc}
-          backgroundSource={fieldBG5}
-          fieldTop={fieldTop}
-          fieldBot={fieldBot}
-          fieldLeft={fieldLeft}
-          fieldRight={fieldRight}
-          styles={styles}
-          getScaledHeight={getScaledHeight}
-          height={100}
-        />
-        <BorderedField
-          placeholder="Image URL (optional)"
-          value={image}
-          onChangeText={setImage}
-          backgroundSource={fieldBG4}
-          fieldTop={fieldTop}
-          fieldBot={fieldBot}
-          fieldLeft={fieldLeft}
-          fieldRight={fieldRight}
-          styles={styles}
-          getScaledHeight={getScaledHeight}
-        />
-
-        <Pressable onLayout={handleBtnLayout} onPress={handleCreate} style={styles.btnWrapper}>
-          <ImageBackground source={buttonBG} style={styles.btnBG} resizeMode="stretch">
-            <Text style={styles.btnText}>Create Event</Text>
-          </ImageBackground>
-
-          {/* Button borders */}
-          <Image source={buttonTop} style={{
-            position: "absolute", top: -getScaledHeight(buttonTop, btnSize.width) / 2,
-            width: btnSize.width,
-            height: getScaledHeight(buttonTop, btnSize.width),
-          }} resizeMode="contain" />
-          <Image source={buttonBot} style={{
-            position: "absolute", bottom: -getScaledHeight(buttonBot, btnSize.width) / 2,
-            width: btnSize.width,
-            height: getScaledHeight(buttonBot, btnSize.width),
-          }} resizeMode="contain" />
-          <Image source={buttonLeft} style={{
-            position: "absolute",
-            left: -(buttonLeft.width / 2),
-            height: btnSize.height + getScaledHeight(buttonTop, btnSize.width),
-            top: -getScaledHeight(buttonTop, btnSize.width) / 2
-          }} resizeMode="contain" />
-          <Image source={buttonRight} style={{
-            position: "absolute",
-            right: -(buttonRight.width / 2),
-            height: btnSize.height + getScaledHeight(buttonTop, btnSize.width),
-            top: -getScaledHeight(buttonTop, btnSize.width) / 2
-          }} resizeMode="contain" />
-        </Pressable>
-      </ScrollView>
+            <Pressable onPress={handleCreate} style={styles.btnWrapper}>
+              <ImageBackground source={buttonBG} style={styles.btnBG} resizeMode="stretch">
+                <Text style={styles.btnText}>Create Event</Text>
+              </ImageBackground>
+            </Pressable>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 16,
-    flexGrow: 1,
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#FFFDE0",
-    textShadowColor: "rgba(0,0,0,0.7)",
-    textShadowOffset: { width: 3, height: 3 },
-    textShadowRadius: 2,
-    marginBottom: 4,
-    alignSelf: "center"
-  },
-  fieldWrapper: {
-    position: "relative",
-    width: "100%",
-    alignSelf: "center",
-    marginTop: 10,
-  },
-  fieldBG: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    justifyContent: "center",
-  },
+  container: { flex: 1 },
+  scrollContent: { padding: 20, gap: 16, flexGrow: 1 },
+  fieldWrapper: { width: "100%", alignSelf: "center" },
+  fieldBG: { paddingHorizontal: 16, minHeight: 60, justifyContent: "center" },
   textInput: {
     fontSize: 16,
     fontFamily: "Roboto_700Bold",
@@ -433,44 +146,17 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.7)",
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1.5,
+    paddingHorizontal: 0,
+    textAlignVertical: "top", // 👈 key
   },
-  borderTop: {
-    position: "absolute",
-    top: -10,
-    width: "100%",
-  },
-  borderBottom: {
-    position: "absolute",
-    bottom: -10,
-    width: "100%",
-  },
-  borderSide: {
-    position: "absolute",
-    height: "100%",
-  },
-  borderLeft: {
-    left: -10,
-  },
-  borderRight: {
-    right: -10,
-  },
-  btnWrapper: {
-    position: "relative",
-    alignSelf: "center",
-    marginTop: 16,
-  },
-  btnBG: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  btnWrapper: { alignSelf: "center", marginTop: 16 },
+  btnBG: { paddingHorizontal: 25, paddingVertical: 20, justifyContent: "center", alignItems: "center" },
   btnText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#FFFDE0",
     textShadowColor: "rgba(0, 0, 0, 0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1.5,
-  }
+  },
 });
