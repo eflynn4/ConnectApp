@@ -14,6 +14,21 @@ import {
 import { Event, useEvents } from "../../context/EventContext";
 import { useProfile } from "../../context/ProfileContext";
 
+type BorderedFieldProps = {
+  placeholder: string;
+  value: string;
+  onChangeText: (t: string) => void;
+  backgroundSource: any; 
+  fieldTop: any;
+  fieldBot: any;
+  fieldLeft: any;
+  fieldRight: any;
+  height?: number;
+  keyboardType?: "default" | "numeric";
+  styles: any; 
+  getScaledHeight: (asset: { width: number; height: number }, renderWidth: number) => number;
+};
+
 export default function CreateEventScreen() {
   const fieldTop = Image.resolveAssetSource(require("../../assets/ui/createfieldtop.png"));
   const fieldBot = Image.resolveAssetSource(require("../../assets/ui/createfieldbot.png"));
@@ -89,6 +104,102 @@ export default function CreateEventScreen() {
   };
 
 
+  
+  const BorderedField: React.FC<BorderedFieldProps> = ({
+    placeholder, value, onChangeText,
+    backgroundSource,
+    height, keyboardType = "default", styles, getScaledHeight,
+  }) => {
+    const [bgSize, setBGSize] = useState({ width: 0, height: 0 });
+  
+    const onBGLayout = (e: LayoutChangeEvent) => {
+      const { width, height } = e.nativeEvent.layout;
+      setBGSize({ width, height });
+    };
+  
+    const topH = bgSize.width ? getScaledHeight(fieldTop, bgSize.width) : 0;
+    const botH = bgSize.width ? getScaledHeight(fieldBot, bgSize.width) : 0;
+    const sideH = bgSize.height + topH; 
+  
+    return (
+      <View style={styles.fieldWrapper}>
+        <ImageBackground
+          source={backgroundSource}
+          style={[styles.fieldBG, height ? { height } : {}]}
+          resizeMode="stretch"
+          onLayout={onBGLayout}
+        >
+          <TextInput
+            placeholder={placeholder}
+            placeholderTextColor="#b5b5b5"
+            value={value}
+            onChangeText={onChangeText}
+            style={[styles.textInput, height ? { height } : {}]}
+            multiline={!!height}
+            keyboardType={keyboardType}
+          />
+        </ImageBackground>
+
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
+            width: bgSize.width * 1.03,
+            height: getScaledHeight(fieldTop, bgSize.width),
+            left: -((bgSize.width * 1.03 - bgSize.width) / 2),
+            zIndex: 1,
+          }}
+        >
+          <Image source={fieldTop} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+        </View>
+
+        
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            bottom: -getScaledHeight(fieldBot, bgSize.width) / 2,
+            width: bgSize.width * 1.03,
+            height: getScaledHeight(fieldBot, bgSize.width),
+            left: -((bgSize.width * 1.03 - bgSize.width) / 2),
+            zIndex: 1,
+          }}
+        >
+          <Image source={fieldBot} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+        </View>
+
+       
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: -(fieldLeft.width / 2),
+            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
+            height: bgSize.height + getScaledHeight(fieldTop, bgSize.width),
+            zIndex: 1,
+          }}
+        >
+          <Image source={fieldLeft} style={{ height: "100%" }} resizeMode="contain" />
+        </View>
+
+        
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            right: -(fieldRight.width / 2),
+            top: -getScaledHeight(fieldTop, bgSize.width) / 2,
+            height: bgSize.height + getScaledHeight(fieldTop, bgSize.width) - 4,
+            zIndex: 1,
+          }}
+        >
+          <Image source={fieldRight} style={{ height: "100%" }} resizeMode="contain" />
+        </View>
+
+      </View>
+    );
+  };
 
 
   const renderField = (placeholder: string, value: string, onChangeText: (text: string) => void, backgroundSource: any, height?: number, keyboardType?: "default" | "numeric") => {
@@ -168,12 +279,88 @@ export default function CreateEventScreen() {
     <ImageBackground source={createBG} style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
 
-        {renderField("Title", title, setTitle, fieldBG1)}
+        {/* {renderField("Title", title, setTitle, fieldBG1)}
         {renderField("Date", date, setDate, fieldBG2)}
         {renderField("Capacity", capacity, setCapacity, fieldBG3, undefined, "numeric")}
         {renderField("Location", location, setLocation, fieldBG4)}
         {renderField("Description", description, setDesc, fieldBG5, 100)}
-        {renderField("Image URL (optional)", image, setImage, fieldBG4)}
+        {renderField("Image URL (optional)", image, setImage, fieldBG4)} */}
+
+
+        <BorderedField
+        placeholder="Title"
+        value={title}
+        onChangeText={setTitle}
+        backgroundSource={fieldBG1}
+        fieldTop={fieldTop}
+        fieldBot={fieldBot}
+        fieldLeft={fieldLeft}
+        fieldRight={fieldRight}
+        styles={styles}
+        getScaledHeight={getScaledHeight}
+        />
+        <BorderedField
+          placeholder="Date"
+          value={date}
+          onChangeText={setDate}
+          backgroundSource={fieldBG2}
+          fieldTop={fieldTop}
+          fieldBot={fieldBot}
+          fieldLeft={fieldLeft}
+          fieldRight={fieldRight}
+          styles={styles}
+          getScaledHeight={getScaledHeight}
+        />
+        <BorderedField
+          placeholder="Capacity"
+          value={capacity}
+          onChangeText={setCapacity}
+          keyboardType="numeric"
+          backgroundSource={fieldBG3}
+          fieldTop={fieldTop}
+          fieldBot={fieldBot}
+          fieldLeft={fieldLeft}
+          fieldRight={fieldRight}
+          styles={styles}
+          getScaledHeight={getScaledHeight}
+        />
+        <BorderedField
+          placeholder="Location"
+          value={location}
+          onChangeText={setLocation}
+          backgroundSource={fieldBG4}
+          fieldTop={fieldTop}
+          fieldBot={fieldBot}
+          fieldLeft={fieldLeft}
+          fieldRight={fieldRight}
+          styles={styles}
+          getScaledHeight={getScaledHeight}
+        />
+        <BorderedField
+          placeholder="Description"
+          value={description}
+          onChangeText={setDesc}
+          backgroundSource={fieldBG5}
+          fieldTop={fieldTop}
+          fieldBot={fieldBot}
+          fieldLeft={fieldLeft}
+          fieldRight={fieldRight}
+          styles={styles}
+          getScaledHeight={getScaledHeight}
+          height={100}
+        />
+        <BorderedField
+          placeholder="Image URL (optional)"
+          value={image}
+          onChangeText={setImage}
+          backgroundSource={fieldBG4}
+          fieldTop={fieldTop}
+          fieldBot={fieldBot}
+          fieldLeft={fieldLeft}
+          fieldRight={fieldRight}
+          styles={styles}
+          getScaledHeight={getScaledHeight}
+        />
 
         <Pressable onLayout={handleBtnLayout} onPress={handleCreate} style={styles.btnWrapper}>
           <ImageBackground source={buttonBG} style={styles.btnBG} resizeMode="stretch">
@@ -269,7 +456,7 @@ const styles = StyleSheet.create({
   },
   btnWrapper: {
     position: "relative",
-    alignSelf: "flex-start",
+    alignSelf: "center",
     marginTop: 16,
   },
   btnBG: {

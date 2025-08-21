@@ -67,7 +67,7 @@ export default function TabsLayout() {
           alignItems: "center",
         },
         tabBarActiveTintColor: "#FFFDE0",
-        tabBarInactiveTintColor: "#ccc",        
+        tabBarInactiveTintColor: "#ccc",
       }}
     >
       <Tabs.Screen
