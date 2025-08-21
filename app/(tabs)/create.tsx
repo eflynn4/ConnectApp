@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0, 0, 0, 0.7)",
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1.5,
-    paddingHorizontal: 0,
+    paddingLeft: 2,
     textAlignVertical: "top", // 👈 key
   },
   btnWrapper: { alignSelf: "center", marginTop: 16 },

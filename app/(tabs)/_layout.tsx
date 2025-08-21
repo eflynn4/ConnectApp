@@ -128,11 +128,11 @@ export default function TabsLayout() {
       />
 
       {/* Hide these from the tab bar/linking */}
-      <Tabs.Screen name="users/[id]/index" options={{ href: null }} />
-      <Tabs.Screen name="users/[id]/chat" options={{ href: null }} />
-      <Tabs.Screen name="event/[id]/index" options={{ href: null }} />
-      <Tabs.Screen name="event/[id]/chat" options={{ href: null }} />
-      <Tabs.Screen name="profile/requests" options={{ href: null }} />
+      <Tabs.Screen name="users/[id]/index" options={{ title: "", href: null }} />
+      <Tabs.Screen name="users/[id]/chat" options={{ title: "", href: null }} />
+      <Tabs.Screen name="event/[id]/index" options={{ title: "", href: null }} />
+      <Tabs.Screen name="event/[id]/chat" options={{ title: "", href: null }} />
+      <Tabs.Screen name="profile/requests" options={{ title: "", href: null }} />
     </Tabs>
   );
 }
