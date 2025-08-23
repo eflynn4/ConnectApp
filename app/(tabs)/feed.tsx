@@ -6,7 +6,7 @@ export default function FeedScreen() {
   const { events } = useEvents();
 
   return (
-    <ImageBackground source={require("../../assets/ui/bg.png")} style={{ flex: 1 }}>
+    <ImageBackground source={require("../../assets/ui/Connect BG 7.png")} style={{ flex: 1 }}>
       <FlatList
         contentContainerStyle={{ padding: 16 }}
         data={events}

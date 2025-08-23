@@ -1,467 +1,326 @@
-import MaskedView from '@react-native-masked-view/masked-view';
-import { LinearGradient } from 'expo-linear-gradient';
+import MaskedView from "@react-native-masked-view/masked-view";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Image, ImageBackground, LayoutChangeEvent, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { memo, useCallback, useMemo, useState } from "react";
+import {
+  Image,
+  ImageBackground,
+  LayoutChangeEvent,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { Event, useEvents } from "../context/EventContext";
 import { useProfile } from "../context/ProfileContext";
 import { useProfiles } from "../context/ProfilesContext";
 
+/* ---------- static assets (resolved once) ---------- */
+const feedCard         = Image.resolveAssetSource(require("../assets/ui/FeedCard.png"));            // bg + border baked in
+const feedPictureFrame = Image.resolveAssetSource(require("../assets/ui/FeedPictureFrame.png"));    // transparent center
+const avatarRingImg    = Image.resolveAssetSource(require("../assets/ui/Avatar Ring.png"));         // transparent center
+const buttonTop        = Image.resolveAssetSource(require("../assets/ui/button-top-border.png"));
+const buttonBot        = Image.resolveAssetSource(require("../assets/ui/button-bot-border.png"));
+const buttonLeft       = Image.resolveAssetSource(require("../assets/ui/button-left-border.png"));
+const buttonRight      = Image.resolveAssetSource(require("../assets/ui/button-right-border.png"));
+const buttonBG         = Image.resolveAssetSource(require("../assets/ui/FeedJoinButton.png"));
 
+/* ---------- layout helpers ---------- */
+const CARD_RATIO  = feedCard.width / feedCard.height;
+const FRAME_RATIO = feedPictureFrame.width / feedPictureFrame.height;
 
-const eventTop = Image.resolveAssetSource(require("../assets/ui/event-top-border.png"));
-const eventBot = Image.resolveAssetSource(require("../assets/ui/event-bot-border.png"));
-const eventLeft = Image.resolveAssetSource(require("../assets/ui/event-left-border.png"));
-const eventRight = Image.resolveAssetSource(require("../assets/ui/event-right-border.png"));
-
-const thumbnailTop = Image.resolveAssetSource(require("../assets/ui/img-top-border.png"));
-const thumnbailBot = Image.resolveAssetSource(require("../assets/ui/img-bot-border.png"));
-const thumbnailLeft = Image.resolveAssetSource(require("../assets/ui/img-left-border.png"));
-const thumbnailRight = Image.resolveAssetSource(require("../assets/ui/img-right-border.png"));
-
-const buttonTop = Image.resolveAssetSource(require("../assets/ui/button-top-border.png"));
-const buttonBot = Image.resolveAssetSource(require("../assets/ui/button-bot-border.png"));
-const buttonLeft = Image.resolveAssetSource(require("../assets/ui/button-left-border.png"));
-const buttonRight = Image.resolveAssetSource(require("../assets/ui/button-right-border.png"));
-const buttonBG = Image.resolveAssetSource(require("../assets/ui/button-bg.png"));
-
-
-
-
-type EventCardProps = {
-  event: Event;
-};
-
-
-
-export default function EventCard({ event }: EventCardProps) {
-  const { id, title, date, location, image, creatorId } = event;
-  const [cardSize, setCardSize] = useState({ width: 0, height: 0 });
-  const router = useRouter();
-  const profiles = useProfiles();
-  const host = profiles.find(p => p.id === creatorId);
-
-  const handleLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setCardSize({ width, height });
-  };
-
-  const handlePress = () => {
-    router.push(`/event/${id}` as const);
-  };
-
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-
-  const handleImageLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setImageSize({ width, height });
-  };
-
-  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
-
-  const handleBtnLayout = (e: LayoutChangeEvent) => {
-    const { width, height } = e.nativeEvent.layout;
-    setBtnSize({ width, height });
-  };
-
-  const { joinEvent, leaveEvent } = useEvents();
-  const { profile } = useProfile();
-  const userId = profile.id;
-
-  const isJoined = event.attendees.includes(userId);
-
-  const buttonText = isJoined
-    ? "JOINED"
-    : "JOIN";
-
-  function getScaledHeight(asset: { width: number; height: number }, renderWidth: number) {
-    const aspectRatio = asset.height / asset.width;
-    return renderWidth * aspectRatio;
+/* Title stroke/shadow config */
+const TITLE_STROKE_RADIUS = 2;
+const TITLE_SHADOW_OFFSET = TITLE_STROKE_RADIUS;
+/* Precompute offsets once */
+const TITLE_OFFSETS: Array<[number, number]> = [];
+for (let dx = -TITLE_STROKE_RADIUS; dx <= TITLE_STROKE_RADIUS; dx++) {
+  for (let dy = -TITLE_STROKE_RADIUS; dy <= TITLE_STROKE_RADIUS; dy++) {
+    if (dx !== 0 || dy !== 0) TITLE_OFFSETS.push([dx, dy]);
   }
-  
-  const topBorderHeight = getScaledHeight(eventTop, cardSize.width);
-  const bottomBorderHeight = getScaledHeight(eventBot, cardSize.width);
-
-  const sideBorderHeight = cardSize.height + topBorderHeight/2 + bottomBorderHeight/2;
-
-  const topButtonBorderHeight = getScaledHeight(buttonTop, btnSize.width);
-  const bottomButtonBorderHeight = getScaledHeight(buttonBot, btnSize.width);
-  const sideButtonBorderHeight = btnSize.height + topButtonBorderHeight / 2 + bottomButtonBorderHeight / 2;
-
-
-  const STROKE_RADIUS = 2;
-  const strokeOffsets = Array.from({ length: STROKE_RADIUS * 2 + 1 }, (_, i) => i - STROKE_RADIUS);
-  const SHADOW_OFFSET = STROKE_RADIUS;
-
-
-  
-
-  return (
-    <Pressable onPress={handlePress} style={styles.cardWrapper}>
-      <View style={styles.outerWrapper}>
-        <View onLayout={handleLayout}>
-          <ImageBackground
-            source={require("../assets/ui/card-bg.png")}
-            style={styles.card}
-            imageStyle={{ borderRadius: 0 }}
-          >
-            <View onLayout={handleImageLayout} style={styles.imageWrapper}>
-              <Image source={{ uri: image }} style={styles.image} />
-
-              {/* Top Border */}
-              <Image
-                source={thumbnailTop}
-                style={{
-                  position: "absolute",
-                  top: -thumbnailTop.height/2,
-                  width: imageSize.width,
-                }}
-                resizeMode="contain"
-              />
-
-              {/* Bottom Border */}
-              <Image
-                source={thumnbailBot}
-                style={{
-                  position: "absolute",
-                  bottom: -thumnbailBot.height/2,
-                  width: imageSize.width,
-                }}
-                resizeMode="contain"
-              />
-
-              {/* Left Border */}
-              <Image
-                source={thumbnailLeft}
-                style={{
-                  position: "absolute",
-                  left: -(thumbnailLeft.width / 2),
-                  height: imageSize.height + getScaledHeight(thumbnailTop, imageSize.width) - 4,
-                  top: -getScaledHeight(thumbnailTop, imageSize.width)/2 + 2
-                }}
-                resizeMode="contain"
-              />
-
-              {/* Right Border */}
-              <Image
-                source={thumbnailRight}
-                style={{
-                  position: "absolute",
-                  right: -(thumbnailRight.width / 2),
-                  height: imageSize.height + getScaledHeight(thumbnailTop, imageSize.width) - 4,
-                  top: -getScaledHeight(thumbnailTop, imageSize.width)/2 + 2
-                }}
-                resizeMode="contain"
-              />
-            </View>
-
-            {host && (
-              <Pressable
-                style={styles.avatarHit}
-                onPress={() => router.push(`/users/${host.id}`)}
-              >
-                <Image source={{ uri: host.avatar }} style={styles.hostAvatar} />
-              </Pressable>
-            )}
-
-            <View style={styles.content}>
-              <View style={styles.titleStack}>
-                {/* Shadow layer — pick one */}
-                <Text
-                  style={[
-                    styles.title,
-                    {
-                      position: "absolute",
-                      // ⬇️ bottom-right (change to -SHADOW_OFFSET for left if you want bottom-left)
-                      left: SHADOW_OFFSET,
-                      top: SHADOW_OFFSET,
-                      color: "rgba(0,0,0,0.7)",
-                      // zIndex:-1 can get clipped; keep it 0 and rely on render order
-                    },
-                  ]}
-                >
-                  {title}
-                </Text>
-
-                {/* Stroke layer — use the centralized offsets */}
-                {strokeOffsets.flatMap((dx) =>
-                  strokeOffsets.map((dy) => {
-                    if (dx === 0 && dy === 0) return null;
-                    return (
-                      <Text
-                        key={`${dx}-${dy}`}
-                        style={[
-                          styles.title,
-                          {
-                            position: "absolute",
-                            left: dx,
-                            top: dy,
-                            color: "rgba(0,0,0,0.05)",
-                          },
-                        ]}
-                      >
-                        {title}
-                      </Text>
-                    );
-                  })
-                )}
-
-                {/* Transparent text for gradient mask */}
-                <Text style={[styles.title, { position: "absolute", color: "transparent" }]}>{title}</Text>
-
-                {/* Gradient on top */}
-                <MaskedView
-                  style={{ height: 28, width: "100%" }}
-                  maskElement={
-                    <View style={{ height: 28, justifyContent: "center" }}>
-                      <Text style={[styles.title, { color: "black" }]}>{title}</Text>
-                    </View>
-                  }
-                >
-                  <LinearGradient
-                    colors={["#ffffff", "#FFFDE0"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={{ height: 28, width: "100%" }}
-                  />
-                </MaskedView>
-              </View>
-
-              <Text style={styles.meta}>{date} • {location}</Text>
-
-              <Pressable
-                onLayout={handleBtnLayout}
-                onPress={() => {
-                  if (isJoined) {
-                    leaveEvent(event.id, profile.id);
-                  } else {
-                    joinEvent(event.id, profile.id);
-                  }
-                }}
-                style={styles.joinButtonWrapper}
-              >
-                <ImageBackground source={buttonBG} style={styles.joinButtonBG} resizeMode="stretch">
-                  <Text style={styles.joinButtonText}>{buttonText}</Text>
-                </ImageBackground>
-
-                {/* Borders exactly like before */}
-                {/* Top Border */}
-                <Image
-                  source={buttonTop}
-                  style={{
-                    position: "absolute",
-                    top: -topButtonBorderHeight / 2,
-                    width: btnSize.width,
-                    height: topButtonBorderHeight,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Bottom Border */}
-                <Image
-                  source={buttonBot}
-                  style={{
-                    position: "absolute",
-                    bottom: -bottomButtonBorderHeight / 2,
-                    width: btnSize.width,
-                    height: bottomButtonBorderHeight,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Left Border */}
-                <Image
-                  source={buttonLeft}
-                  style={{
-                    position: "absolute",
-                    left: -(buttonLeft.width / 2),
-                    height: sideButtonBorderHeight,
-                    top: -topButtonBorderHeight / 2,
-                  }}
-                  resizeMode="contain"
-                />
-
-                {/* Right Border */}
-                <Image
-                  source={buttonRight}
-                  style={{
-                    position: "absolute",
-                    right: -(buttonRight.width / 2),
-                    height: sideButtonBorderHeight,
-                    top: -topButtonBorderHeight / 2,
-                  }}
-                  resizeMode="contain"
-                />
-
-              </Pressable>
-
-
-
-            </View>
-
-
-
-          </ImageBackground>
-        </View>
-
-        {/* Borders scaled dynamically */}
-        <Image
-          source={eventTop}
-          style={ styles.borderTop }
-          resizeMode="contain"
-        />
-        <Image
-          source={eventBot}
-          style={ styles.borderBottom }
-          resizeMode="contain"
-        />
-        <Image
-          source={eventLeft}
-          style={{position: "absolute",
-            left: -(eventLeft.width/2),
-            height: sideBorderHeight - 4,
-            top: -topBorderHeight/2 + 2,
-            zIndex: 1, }}
-          resizeMode="contain"
-        />
-        <Image
-          source={eventRight}
-          style={{position: "absolute",
-            right: -(eventLeft.width/2),
-            top: -topBorderHeight/2 + 2,
-            height: sideBorderHeight -4,
-            zIndex: 1, }}
-          resizeMode="contain"
-        />
-      </View>
-    </Pressable>
-  );
 }
 
-const styles = StyleSheet.create({
+/* Button text stroke config */
+const BTN_STROKE_RADIUS = 2;
+const BTN_OFFSETS: Array<[number, number]> = [];
+for (let dx = -BTN_STROKE_RADIUS; dx <= BTN_STROKE_RADIUS; dx++) {
+  for (let dy = -BTN_STROKE_RADIUS; dy <= BTN_STROKE_RADIUS; dy++) {
+    if (dx !== 0 || dy !== 0) BTN_OFFSETS.push([dx, dy]);
+  }
+}
+/* Match shadow insets so it doesn’t clip */
+const BTN_SHADOW_DX = 3;
+const BTN_SHADOW_DY = 3;
 
-  image: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 0,
+/* Small helper */
+const getScaledHeight = (asset: { width: number; height: number }, renderW: number) =>
+  (asset.height / asset.width) * renderW;
+
+type EventCardProps = { event: Event };
+
+const EventCard = memo(function EventCard({ event }: EventCardProps) {
+  const { id, title, date, location, image, creatorId, attendees } = event;
+
+  const router = useRouter();
+  const { joinEvent, leaveEvent } = useEvents();
+  const { profile } = useProfile();
+  const profiles = useProfiles();
+
+  const host = profiles.find((p) => p.id === creatorId);
+  const isJoined = attendees.includes(profile.id);
+  const buttonText = isJoined ? "JOINED" : "JOIN";
+
+  /* Button border math (needs size once from layout) */
+  const [btnSize, setBtnSize] = useState({ width: 0, height: 0 });
+  const onBtnLayout = useCallback((e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    // set only if changed to avoid extra renders
+    if (width !== btnSize.width || height !== btnSize.height) {
+      setBtnSize({ width, height });
+    }
+  }, [btnSize.width, btnSize.height]);
+
+  const topBtnH = useMemo(() => getScaledHeight(buttonTop, btnSize.width), [btnSize.width]);
+  const botBtnH = useMemo(() => getScaledHeight(buttonBot, btnSize.width), [btnSize.width]);
+  const sideBtnH = btnSize.height + topBtnH / 2 + botBtnH / 2;
+
+  /* Robust image source (keeps UI same) */
+  const imgSource = useMemo(() => {
+    if (typeof image === "string" && /^https?:\/\//.test(image)) {
+      return { uri: image };
+    }
+    // fallback – any local placeholder you prefer is fine
+    return avatarRingImg; // harmless placeholder if image missing
+  }, [image]);
+
+  const goEvent = useCallback(() => {
+    router.push(`/event/${id}` as const);
+  }, [router, id]);
+
+  const onToggleJoin = useCallback(() => {
+    if (isJoined) leaveEvent(id, profile.id);
+    else joinEvent(id, profile.id);
+  }, [isJoined, leaveEvent, joinEvent, id, profile.id]);
+
+  return (
+    <Pressable onPress={goEvent} style={styles.cardWrapper}>
+      <ImageBackground source={feedCard} style={styles.card} resizeMode="stretch">
+        {/* Photo + frame */}
+        <View style={styles.photoArea}>
+          <View style={styles.frameBox}>
+            <Image source={imgSource as any} style={styles.photo} resizeMode="cover" />
+            <Image source={feedPictureFrame} style={styles.frameOverlay} resizeMode="stretch" />
+          </View>
+        </View>
+
+        {/* Avatar + ring */}
+        {host && (
+          <Pressable
+            style={styles.avatarWrap}
+            onPress={() => router.push(`/users/${host.id}` as const)}
+          >
+            <Image source={{ uri: host.avatar }} style={styles.avatar} />
+            <Image source={avatarRingImg} style={styles.avatarRing} resizeMode="contain" />
+          </Pressable>
+        )}
+
+        {/* Text/content */}
+        <View style={styles.content}>
+          <View style={styles.titleStack}>
+            {/* soft shadow */}
+            <Text
+              style={[
+                styles.title,
+                {
+                  position: "absolute",
+                  left: TITLE_SHADOW_OFFSET,
+                  top: TITLE_SHADOW_OFFSET,
+                  color: "rgba(0,0,0,0.7)",
+                },
+              ]}
+            >
+              {title}
+            </Text>
+
+            {/* subtle strokes (precomputed offsets) */}
+            {TITLE_OFFSETS.map(([dx, dy]) => (
+              <Text
+                key={`${dx},${dy}`}
+                style={[
+                  styles.title,
+                  { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.07)" },
+                ]}
+              >
+                {title}
+              </Text>
+            ))}
+
+            {/* gradient fill */}
+            <Text style={[styles.title, { position: "absolute", color: "transparent" }]}>
+              {title}
+            </Text>
+            <MaskedView
+              style={{ height: 28, width: "100%" }}
+              maskElement={
+                <View style={{ height: 28, justifyContent: "center" }}>
+                  <Text style={[styles.title, { color: "black" }]}>{title}</Text>
+                </View>
+              }
+            >
+              <LinearGradient
+                colors={["#ffffff", "#FFFDE0"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ height: 28, width: "100%" }}
+              />
+            </MaskedView>
+          </View>
+
+          <Text style={styles.meta}>
+            {date} • {location}
+          </Text>
+
+          {/* Join button */}
+          <Pressable onLayout={onBtnLayout} onPress={onToggleJoin} style={styles.joinButtonWrapper}>
+            <ImageBackground source={buttonBG} style={styles.joinButtonBG} resizeMode="stretch">
+              <View style={styles.btnTextStack}>
+                {/* strokes */}
+                {BTN_OFFSETS.map(([dx, dy]) => (
+                  <Text
+                    key={`${dx},${dy}`}
+                    style={[
+                      styles.joinButtonStrokes,
+                      { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.07)" },
+                    ]}
+                  >
+                    {buttonText}
+                  </Text>
+                ))}
+                {/* main */}
+                <Text style={styles.joinButtonText}>{buttonText}</Text>
+              </View>
+            </ImageBackground>
+
+            {/* decorative borders */}
+            <Image
+              source={buttonTop}
+              style={{ position: "absolute", top: -topBtnH / 2, width: btnSize.width, height: topBtnH }}
+              resizeMode="contain"
+            />
+            <Image
+              source={buttonBot}
+              style={{ position: "absolute", bottom: -botBtnH / 2, width: btnSize.width, height: botBtnH }}
+              resizeMode="contain"
+            />
+            <Image
+              source={buttonLeft}
+              style={{ position: "absolute", left: -(buttonLeft.width / 2), height: sideBtnH, top: -topBtnH / 2 }}
+              resizeMode="contain"
+            />
+            <Image
+              source={buttonRight}
+              style={{ position: "absolute", right: -(buttonRight.width / 2), height: sideBtnH, top: -topBtnH / 2 }}
+              resizeMode="contain"
+            />
+          </Pressable>
+        </View>
+      </ImageBackground>
+    </Pressable>
+  );
+});
+
+export default EventCard;
+
+const styles = StyleSheet.create({
+  cardWrapper: {
+    width: "95%",
+    aspectRatio: CARD_RATIO,
+    alignSelf: "center",
+    marginBottom: 24,
   },
-  hostAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: "#B0FFF9",
-    backgroundColor: "#eee",
-    marginBottom: 5,
+  card: {
+    flex: 1,
+    backgroundColor: "transparent",
+    paddingBottom: 12,
   },
-  avatarHit: {
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-    zIndex: 10,
+
+  /* Photo area */
+  photoArea: {
+    alignItems: "center",
+    marginTop: "9%",
   },
-  content: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    marginTop: 32,
-  },
-  titleLayout: {
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    height: 28, // match the MaskedView height
+  frameBox: {
+    width: "82%",
+    aspectRatio: FRAME_RATIO,
+    position: "relative",
+    alignItems: "center",
     justifyContent: "center",
   },
-  
+  photo: {
+    width: "94%",
+    height: "94%",
+  },
+  frameOverlay: {
+    width: "100%",
+    height: "100%",
+    position: "absolute",
+  },
+
+  /* Avatar */
+  avatarWrap: {
+    position: "absolute",
+    right: "11%",
+    bottom: "9%",
+    width: "18%",
+    aspectRatio: 1, // square
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatar: {
+    width: "82%",
+    height: "82%",
+    borderRadius: 9999,
+    backgroundColor: "#eee",
+  },
+  avatarRing: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
+
+  /* Text */
+  content: {
+    paddingTop: "1.5%",
+    paddingHorizontal: "12%",
+  },
   titleStack: {
     height: 28,
     justifyContent: "center",
     alignItems: "flex-start",
-    position: "relative", // anchor for absolute stroke layers
-  },
-  
-  title: {
-    fontSize: 20,
-    fontFamily: "Roboto_700Bold",
-    lineHeight: 28,
-  },
-  
-  
-  strokeText: {
-    color: "black",
-    zIndex: 0,
-  },
-  
-  
-  titleMaskContainer: {
-    height: 28,
-    justifyContent: "center",
     position: "relative",
   },
-  
-
+  title: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Roboto_700Bold",
+  },
   meta: {
-    fontSize: 14, // bigger
-    fontFamily: "Roboto_700Bold", // thicker
-    color: "#FFFDE0", // brighter like title
+    fontSize: 18,
+    fontFamily: "Roboto_700Bold",
+    color: "#FFFDE0",
     textShadowColor: "rgba(0, 0, 0, 0.9)",
     textShadowOffset: { width: 1.5, height: 1.5 },
     textShadowRadius: 2,
-    marginTop: 4, // small spacing below title
-    marginBottom: 5
+    marginTop: 7,
+    marginBottom: 6,
   },
-  outerWrapper: {
-    position: "relative",
-    alignSelf: "stretch", // matches parent width
-  },
-  
-  cardWrapper: {
-    marginBottom: 48,
-  },
-  
-  card: {
-    paddingBottom: 12,
-    backgroundColor: "transparent",
-  },
-  
-  borderTop: {
-    position: "absolute",
-    top: -(eventTop.height/2),
-    width: "100%",
-    zIndex: 10,
-  },
-  
-  borderBottom: {
-    position: "absolute",
-    bottom: -(eventBot.height/2),
-    width: "100%",
-    zIndex: 10,
-  },
-  
-  borderLeft: {
-    position: "absolute",
-    left: -(eventLeft.width/2),
-    height: "100%",
-    zIndex: 10,
-  },
-  
-  borderRight: {
-    position: "absolute",
-    right: -(eventRight.width/2),
-    height: "100%",
-    zIndex: 10,
-  },
-  imageWrapper: {
-    position: "relative",
-    width: "90%",
-    height: 180,
-    top: "10%",
-    left: "5%",
-  },
+
+  /* Join button */
   joinButtonWrapper: {
-    alignSelf: "flex-start", // shrink to fit text
+    alignSelf: "flex-start",
     position: "relative",
-    marginTop: 12,
-    marginBottom: 10,
+    marginTop: "12%",
+    marginLeft: "3%",
   },
   joinButtonBG: {
     paddingHorizontal: 16,
@@ -469,13 +328,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  btnTextStack: {
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    // ensure text shadow & strokes never clip on right/bottom
+  },
   joinButtonText: {
-    fontSize: 16,
+    fontSize: 28,
     fontFamily: "Roboto_700Bold",
     color: "#FFFDE0",
-    textShadowColor: "rgba(0, 0, 0, 0.8)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 1.5,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: BTN_SHADOW_DX, height: BTN_SHADOW_DY },
+    textShadowRadius: 2,
+    paddingRight: 3
   },
-  
+  joinButtonStrokes: {
+    fontSize: 28,
+    fontFamily: "Roboto_700Bold",
+  },
 });
+
