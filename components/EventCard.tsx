@@ -19,11 +19,11 @@ import { useProfiles } from "../context/ProfilesContext";
 const feedCard         = Image.resolveAssetSource(require("../assets/ui/FeedCard.png"));            // bg + border baked in
 const feedPictureFrame = Image.resolveAssetSource(require("../assets/ui/FeedPictureFrame.png"));    // transparent center
 const avatarRingImg    = Image.resolveAssetSource(require("../assets/ui/Avatar Ring.png"));         // transparent center
-const buttonTop        = Image.resolveAssetSource(require("../assets/ui/button-top-border.png"));
-const buttonBot        = Image.resolveAssetSource(require("../assets/ui/button-bot-border.png"));
-const buttonLeft       = Image.resolveAssetSource(require("../assets/ui/button-left-border.png"));
-const buttonRight      = Image.resolveAssetSource(require("../assets/ui/button-right-border.png"));
-const buttonBG         = Image.resolveAssetSource(require("../assets/ui/FeedJoinButton.png"));
+const buttonTop        = Image.resolveAssetSource(require("../assets/ui/button-top-border-2.png"));
+const buttonBot        = Image.resolveAssetSource(require("../assets/ui/button-bot-border-2.png"));
+const buttonLeft       = Image.resolveAssetSource(require("../assets/ui/button-left-border-2.png"));
+const buttonRight      = Image.resolveAssetSource(require("../assets/ui/button-right-border-2.png"));
+const buttonBG         = Image.resolveAssetSource(require("../assets/ui/FeedJoinButton3.png"));
 
 /* ---------- layout helpers ---------- */
 const CARD_RATIO  = feedCard.width / feedCard.height;
@@ -127,33 +127,23 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
         {/* Text/content */}
         <View style={styles.content}>
           <View style={styles.titleStack}>
-            {/* soft shadow */}
-            <Text
-              style={[
-                styles.title,
-                {
-                  position: "absolute",
-                  left: TITLE_SHADOW_OFFSET,
-                  top: TITLE_SHADOW_OFFSET,
-                  color: "rgba(0,0,0,0.7)",
-                },
-              ]}
-            >
-              {title}
-            </Text>
-
             {/* subtle strokes (precomputed offsets) */}
             {TITLE_OFFSETS.map(([dx, dy]) => (
               <Text
                 key={`${dx},${dy}`}
                 style={[
-                  styles.title,
+                  styles.titleStrokes,
                   { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.07)" },
                 ]}
               >
                 {title}
               </Text>
             ))}
+
+            {/* shadow */}
+            <Text style={[styles.titleShadow, { position: "absolute", color: "black" }]}>
+              {title}
+            </Text>
 
             {/* gradient fill */}
             <Text style={[styles.title, { position: "absolute", color: "transparent" }]}>
@@ -176,9 +166,23 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
             </MaskedView>
           </View>
 
-          <Text style={styles.meta}>
-            {date} • {location}
-          </Text>
+
+          <View style={styles.metaStack}>
+            {TITLE_OFFSETS.map(([dx, dy]) => (
+              <Text
+                key={`${dx},${dy}`}
+                style={[
+                  styles.metaStrokes,
+                  { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.05)" },
+                ]}
+              >
+                {date} • {location}
+              </Text>
+            ))}
+            <Text style={styles.meta}>
+              {date} • {location}
+            </Text>
+          </View>
 
           {/* Join button */}
           <Pressable onLayout={onBtnLayout} onPress={onToggleJoin} style={styles.joinButtonWrapper}>
@@ -303,23 +307,57 @@ const styles = StyleSheet.create({
     fontSize: 22,
     lineHeight: 28,
     fontFamily: "Roboto_700Bold",
+    paddingRight: 3
   },
+  titleShadow: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Roboto_700Bold",
+    textShadowColor: "rgba(0, 0, 0, 0.9)",
+    textShadowOffset: { width: 1.5, height: 1.5 },
+    paddingRight: 3,
+    opacity: 0.7
+  },
+  titleStrokes: {
+    fontSize: 22,
+    lineHeight: 28,
+    fontFamily: "Roboto_700Bold",
+    paddingRight: 3
+  },
+  metaStack: {
+    position: "relative",
+    justifyContent: "center",
+    marginTop: 7,            // keep your vertical spacing here
+    marginBottom: 2,
+
+  },
+  
   meta: {
     fontSize: 18,
+    lineHeight: 24,          // match stack height
     fontFamily: "Roboto_700Bold",
     color: "#FFFDE0",
     textShadowColor: "rgba(0, 0, 0, 0.9)",
     textShadowOffset: { width: 1.5, height: 1.5 },
     textShadowRadius: 2,
-    marginTop: 7,
-    marginBottom: 6,
+    paddingRight: 3,
+    paddingBottom: 3
   },
+  
+  metaStrokes: {
+    fontSize: 18,
+    lineHeight: 24,          // exact same
+    fontFamily: "Roboto_700Bold",
+    paddingRight: 3,
+    paddingBottom: 3
+  },
+  
 
   /* Join button */
   joinButtonWrapper: {
     alignSelf: "flex-start",
     position: "relative",
-    marginTop: "12%",
+    marginTop: "11%",
     marginLeft: "3%",
   },
   joinButtonBG: {
@@ -337,7 +375,7 @@ const styles = StyleSheet.create({
   joinButtonText: {
     fontSize: 28,
     fontFamily: "Roboto_700Bold",
-    color: "#FFFDE0",
+    color: "#FFFCD4",
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: BTN_SHADOW_DX, height: BTN_SHADOW_DY },
     textShadowRadius: 2,

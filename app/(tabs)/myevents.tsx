@@ -29,6 +29,15 @@ const card = Image.resolveAssetSource(
 const CARD_RATIO = card.width / card.height;
 const THUMB_RATIO = pictureFrame.width / pictureFrame.height;
 
+const TITLE_STROKE_RADIUS = 2;
+
+const TITLE_OFFSETS: Array<[number, number]> = [];
+for (let dx = -TITLE_STROKE_RADIUS; dx <= TITLE_STROKE_RADIUS; dx++) {
+  for (let dy = -TITLE_STROKE_RADIUS; dy <= TITLE_STROKE_RADIUS; dy++) {
+    if (dx !== 0 || dy !== 0) TITLE_OFFSETS.push([dx, dy]);
+  }
+}
+
 export default function MyEventsScreen() {
   const { events } = useEvents();
   const { profile } = useProfile();
@@ -43,12 +52,41 @@ export default function MyEventsScreen() {
           <ImageBackground source={card} style={styles.cardBody} resizeMode="stretch">
             <View style={styles.row}>
               <View style={styles.leftCol}>
+
+                {/* subtle strokes (precomputed offsets) */}
+                {TITLE_OFFSETS.map(([dx, dy]) => (
+                  <Text
+                    key={`${dx},${dy}`}
+                    style={[
+                      styles.titleStrokes,
+                      { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.07)" },
+                    ]}
+                  >
+                    {item.title}
+                  </Text>
+                ))}
+
+
                 <Text numberOfLines={2} style={styles.title}>
                   {item.title}
                 </Text>
-                <Text style={styles.meta}>
-                  {item.date} • {item.location}
-                </Text>
+
+                <View style={styles.metaStack}>
+                  {TITLE_OFFSETS.map(([dx, dy]) => (
+                    <Text
+                      key={`${dx},${dy}`}
+                      style={[
+                        styles.metaStrokes,
+                        { position: "absolute", left: dx, top: dy, color: "rgba(0,0,0,0.05)" },
+                      ]}
+                    >
+                      {item.date} • {item.location}
+                    </Text>
+                  ))}
+                  <Text style={styles.meta}>
+                    {item.date} • {item.location}
+                  </Text>
+                </View>
 
                 <View style={styles.btnRow}>
                   <Pressable
@@ -129,16 +167,36 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1.5, height: 1.5 },
     textShadowRadius: 2,
   },
+  titleStrokes: {
+    paddingHorizontal: 10,
+    fontSize: 20,
+    lineHeight: 28,
+    fontFamily: "Roboto_700Bold",
+  },
   meta: {
     paddingHorizontal: 10,
-    marginTop: 6,
-    marginBottom: 10,
+    paddingBottom: 3,
     fontSize: 14,
     fontFamily: "Roboto_700Bold",
     color: "#FFFDE0",
     textShadowColor: "rgba(0,0,0,0.85)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1.5,
+  },
+
+
+  metaStack: {
+    position: "relative",
+    justifyContent: "center",
+    marginTop: 6,            // keep your vertical spacing here
+    marginBottom: 7,
+  },
+  metaStrokes: {
+    paddingHorizontal: 10,
+    fontSize: 14,
+    fontFamily: "Roboto_700Bold",
+    paddingRight: 3,
+    paddingBottom: 3
   },
 
   btnRow: {
