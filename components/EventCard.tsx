@@ -84,13 +84,12 @@ const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const botBtnH = useMemo(() => getScaledHeight(buttonBot, btnSize.width), [btnSize.width]);
   const sideBtnH = btnSize.height + topBtnH / 2 + botBtnH / 2;
 
-  /* Robust image source (keeps UI same) */
+  // simplest: accept any non-empty string
   const imgSource = useMemo(() => {
-    if (typeof image === "string" && /^https?:\/\//.test(image)) {
-      return { uri: image };
+    if (typeof image === "string" && image.trim().length > 0) {
+      return { uri: image }; // works for http(s), file://, content://, ph://, etc.
     }
-    // fallback – any local placeholder you prefer is fine
-    return avatarRingImg; // harmless placeholder if image missing
+    return require("../assets/ui/Avatar Ring.png"); // use require() for local fallback
   }, [image]);
 
   const goEvent = useCallback(() => {

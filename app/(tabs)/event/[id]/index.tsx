@@ -19,6 +19,15 @@ const buttonLeft = Image.resolveAssetSource(require("../../../../assets/ui/butto
 const buttonRight = Image.resolveAssetSource(require("../../../../assets/ui/button-right-border.png"));
 const buttonBG = Image.resolveAssetSource(require("../../../../assets/ui/button-bg.png"));
 
+// NEW PNGS FOR REDOING UI:
+
+const detailsBG = Image.resolveAssetSource(require("../../../../assets/ui/DetailsBG.png"));
+const detailsChatBtn = Image.resolveAssetSource(require("../../../../assets/ui/DetailsChatBtn.png"));
+const detailsJoinBG = Image.resolveAssetSource(require("../../../../assets/ui/DetailsJoinBG.png"));
+const detailsPictureFrame = Image.resolveAssetSource(require("../../../../assets/ui/DetailsPictureFrame.png"));
+
+
+
 function getScaledHeight(asset: { width: number; height: number }, renderWidth: number) {
   const aspectRatio = asset.height / asset.width;
   return renderWidth * aspectRatio;
